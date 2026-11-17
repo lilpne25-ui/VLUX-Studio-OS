@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vlux.local/contracts/creative-director.v0.2.schema.json",
+  "title": "VLUX Creative Director recommendation",
+  "type": "object",
+  "required": ["contract_version", "status", "hooks", "recommended_hook", "evidence", "recommended_experiment"],
+  "properties": {
+    "contract_version": {"const": "creative-director.v0.2"},
+    "status": {"const": "PROPOSAL_ONLY"},
+    "hooks": {"type": "array", "minItems": 3, "items": {"type": "string"}},
+    "recommended_hook": {"type": "string"},
+    "evidence": {"type": "object", "required": ["records_available", "confidence", "limitations"]},
+    "recommended_experiment": {"type": "object", "required": ["design", "success_metric", "approval_required"]}
+  },
+  "additionalProperties": true
+}

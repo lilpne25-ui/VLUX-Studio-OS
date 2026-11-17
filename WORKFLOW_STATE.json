@@ -1,0 +1,10 @@
+{
+  "version": "0.4",
+  "last_phase_completed": "REAL_DATA_ACTIVATION",
+  "current_atom": null,
+  "tests": {"unit": 10, "e2e": "V03_E2E_PASS", "verify_script": "PASS"},
+  "data": {"ep011_publication_registered": true, "ep011_video_available": false, "provenance": "USER_PROVIDED_SCREENSHOT", "synthetic_mixed_with_real": false},
+  "learning": {"status": "NO_TRAINING_INSUFFICIENT_DATA", "reason": "one publication; no independent holdout or sufficient human labels"},
+  "pending": ["import authorized EP011 review copy", "analyze EP011 MP4", "collect EP025 proposal preferences", "add platform metrics with dates"],
+  "next_action": "Use start.ps1, import a copied EP011 review MP4, then analyze it"
+}

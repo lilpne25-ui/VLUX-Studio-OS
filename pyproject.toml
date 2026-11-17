@@ -1,0 +1,10 @@
+[project]
+name = "vlux-creative-intelligence"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = []
+[project.scripts]
+vlux-ci = "vlux_ci.cli:main"
+[optional-dependencies]
+vision = ["opencv-python>=4.8"]
+ml = ["numpy>=1.24"]

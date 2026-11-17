@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 520" role="img" aria-labelledby="title desc">
+  <title id="title">VLUX Studio OS</title><desc id="desc">AI-powered creative intelligence by VLUX</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07090c"/><stop offset=".55" stop-color="#111923"/><stop offset="1" stop-color="#0a1017"/></linearGradient>
+    <linearGradient id="line" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#7cecff" stop-opacity="0"/><stop offset=".5" stop-color="#7cecff"/><stop offset="1" stop-color="#7cecff" stop-opacity="0"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="10" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1600" height="520" rx="28" fill="url(#bg)"/>
+  <path d="M0 420 C290 330 410 480 690 380 S1120 230 1600 310" fill="none" stroke="#9aa9b8" stroke-opacity=".12" stroke-width="2"/>
+  <path d="M0 438 C320 348 470 498 760 390 S1200 255 1600 330" fill="none" stroke="url(#line)" stroke-width="2"/>
+  <g fill="none" stroke="#78e7f8" stroke-opacity=".34" filter="url(#glow)"><circle cx="1230" cy="160" r="82" stroke-width="1"/><circle cx="1230" cy="160" r="128" stroke-width="1"/><path d="M1090 160h280M1230 20v280" stroke-width="1"/></g>
+  <text x="96" y="120" fill="#a9b7c5" font-family="Arial,Helvetica,sans-serif" font-size="22" letter-spacing="5">VLUX — eTRANSFORMATION PARTNER</text>
+  <text x="92" y="238" fill="#f5f7fa" font-family="Arial,Helvetica,sans-serif" font-size="78" font-weight="700" letter-spacing="-2">VLUX STUDIO OS</text>
+  <text x="98" y="292" fill="#82e8f7" font-family="Arial,Helvetica,sans-serif" font-size="28" letter-spacing="1">AI-POWERED CREATIVE INTELLIGENCE</text>
+  <text x="100" y="374" fill="#d9e0e7" font-family="Arial,Helvetica,sans-serif" font-size="22" letter-spacing="4">ANALYZE.  LEARN.  IMPROVE.  CREATE.</text>
+  <rect x="98" y="410" width="360" height="1" fill="#78e7f8" opacity=".7"/>
+</svg>
