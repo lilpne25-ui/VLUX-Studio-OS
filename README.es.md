@@ -211,6 +211,8 @@ Validar los esquemas públicos contra exportaciones locales:
 python scripts\validate_contracts.py --defaults
 ```
 
+Las versiones, productores e invariantes están en [`contracts/README.md`](contracts/README.md).
+
 ## Estado y roadmap
 
 Implementado: V0.1 dataset, V0.2 inteligencia creativa, V0.3 dashboard funcional, V0.4 analítica comercial separada por plataforma, V0.5 Attention Lab, A/B por capas, Dataset Registry, Training Gate, Model Registry y versiones locales de producción.

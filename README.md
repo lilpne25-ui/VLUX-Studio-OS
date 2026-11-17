@@ -270,6 +270,8 @@ Validate the public contract schemas against local exports:
 python scripts\validate_contracts.py --defaults
 ```
 
+Contract versions, producers and invariants are listed in [`contracts/README.md`](contracts/README.md).
+
 ## Project structure
 
 ```text
