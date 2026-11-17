@@ -55,7 +55,7 @@ def main():
         assert data.get("status") in {"PROPOSAL_ONLY", "REVIEW_REQUIRED"}
     # Restart persistence: new process reads the same database.
     status = json.loads(run(base + ["dataset-status"]))
-    assert status["schema_version"] == "0.4"
+    assert status["schema_version"] == "0.5"
     assert status["source_kinds"]
     publication = json.loads(run(base + ["publication", "--episode", "WEB-SYN",
                                           "--platform", "Instagram",
@@ -87,7 +87,7 @@ def main():
                 time.sleep(0.2)
         else:
             raise RuntimeError("dashboard_did_not_start")
-        assert summary["schema_version"] == "0.4"
+        assert summary["schema_version"] == "0.5"
         with urllib.request.urlopen(base_url + "/api/publications", timeout=5) as response:
             assert json.loads(response.read())["publications"]
         with urllib.request.urlopen(base_url + "/api/proposals", timeout=5) as response:

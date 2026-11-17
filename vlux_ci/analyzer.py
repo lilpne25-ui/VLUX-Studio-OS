@@ -41,6 +41,8 @@ def analyze(path: str | Path, sample_fps: float = 4.0) -> tuple[dict, dict, list
         step = max(1, int(fps / sample_fps))
         prev = None
         vals, samples, first_motion = [], [], []
+        edge_vals, lower_edge_vals, first_edges = [], [], []
+        cut_times: list[float] = []
         cuts, blacks, freezes = 0, 0, 0
         static_start = None
         while True:
@@ -54,14 +56,26 @@ def analyze(path: str | Path, sample_fps: float = 4.0) -> tuple[dict, dict, list
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             mean, std = float(gray.mean()), float(gray.std())
             vals.append((mean, std))
+            edges = cv2.Canny(gray, 80, 160)
+            edge_density = float((edges > 0).mean())
+            h = gray.shape[0]
+            lower = gray[int(h * 0.68):int(h * 0.94), :]
+            lower_edges = cv2.Canny(lower, 60, 140)
+            lower_density = float((lower_edges > 0).mean())
+            edge_vals.append(edge_density)
+            lower_edge_vals.append(lower_density)
+            if t <= 3.0:
+                first_edges.append(edge_density)
             diff = None if prev is None else float(cv2.absdiff(gray, prev).mean())
             samples.append({"time_s": round(t, 3), "brightness": mean, "contrast": std,
-                            "motion": diff})
+                            "motion": diff, "edge_density": edge_density,
+                            "lower_third_edge_density": lower_density})
             if mean < 8:
                 blacks += 1
             if diff is not None:
                 if diff > 22:
                     cuts += 1
+                    cut_times.append(round(t, 3))
                 if diff < 1.0:
                     freezes += 1
                     if static_start is None:
@@ -89,15 +103,26 @@ def analyze(path: str | Path, sample_fps: float = 4.0) -> tuple[dict, dict, list
                 "recommendation": "Comparar contra feedback humano antes de añadir movimiento.",
             })
         avg_shot = duration / max(1, cuts + 1)
+        all_motion = [s["motion"] for s in samples if s["motion"] is not None]
+        first_second_motion = [s["motion"] for s in samples
+                               if s["time_s"] <= 1.0 and s["motion"] is not None]
+        first_3s = [s for s in samples if s["time_s"] <= 3.0]
         objective.update({
             "cut_count": cuts, "avg_shot_s": avg_shot,
+            "cut_times": cut_times,
+            "first_3s_cut_count": sum(1 for t in cut_times if t <= 3.0),
             "motion_mean": sum(x for x in first_motion) / max(1, len(first_motion)),
+            "motion_mean_full": sum(all_motion) / max(1, len(all_motion)),
             "brightness_mean": sum(x[0] for x in vals) / n,
             "contrast_mean": sum(x[1] for x in vals) / n,
+            "edge_density_mean": sum(edge_vals) / max(1, len(edge_vals)),
+            "edge_density_first3s": sum(first_edges) / max(1, len(first_edges)),
+            "lower_third_edge_density_mean": sum(lower_edge_vals) / max(1, len(lower_edge_vals)),
+            "first_frame": samples[0] if samples else None,
+            "first_3s_samples": len(first_3s),
             "black_ratio": blacks / n, "freeze_ratio": freezes / max(1, n - 1),
             "first_3s_motion": sum(first_motion) / max(1, len(first_motion)),
-            "first_second_motion": sum(x for x in first_motion if len(first_motion) <= 4 or x is not None)
-            / max(1, min(len(first_motion), int(sample_fps))),
+            "first_second_motion": sum(first_second_motion) / max(1, len(first_second_motion)),
             "sample_count": len(samples), "timeline": samples,
         })
         if cuts == 0 and duration > 3:
@@ -113,6 +138,11 @@ def analyze(path: str | Path, sample_fps: float = 4.0) -> tuple[dict, dict, list
 
     silences = _silence_segments(path) if meta.get("has_audio") else []
     objective["silence_segments"] = silences
+    objective["silence_total_s"] = sum(s["duration_s"] for s in silences)
+    objective["silence_ratio"] = (
+        objective["silence_total_s"] / objective["duration_s"]
+        if objective.get("duration_s") else None
+    )
     objective["voice_presence"] = "audio_stream_present" if meta.get("has_audio") else "no_audio"
     for silence in silences:
         if silence["duration_s"] >= 1.5:
@@ -124,6 +154,6 @@ def analyze(path: str | Path, sample_fps: float = 4.0) -> tuple[dict, dict, list
             })
     estimated["scene_3d_note"] = (
         "La detección de objetos 3D y de intención de cámara requiere anotación humana o "
-        "metadata de Blender; V0.2 sólo marca proxies visuales y no afirma realismo."
+        "metadata de Blender; esta versión sólo marca proxies visuales y no afirma realismo."
     )
     return objective, estimated, observations

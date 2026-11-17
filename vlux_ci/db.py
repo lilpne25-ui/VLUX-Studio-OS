@@ -3,7 +3,7 @@ import hashlib, json, sqlite3
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "0.4"
+SCHEMA_VERSION = "0.5"
 FEATURE_NAMES = ["duration_s","fps","width","height","cut_count","avg_shot_s","motion_mean","brightness_mean","contrast_mean","black_ratio","freeze_ratio","subtitle_space_ratio","first_second_motion","first_second_brightness"]
 
 def sha256_file(path: str | Path) -> str:
@@ -16,6 +16,7 @@ def connect(db: str | Path, check_same_thread: bool = True) -> sqlite3.Connectio
     Path(db).parent.mkdir(parents=True, exist_ok=True)
     con=sqlite3.connect(str(db), check_same_thread=check_same_thread); con.row_factory=sqlite3.Row
     con.execute("PRAGMA foreign_keys=ON")
+    con.execute("PRAGMA busy_timeout=5000")
     con.executescript('''
     CREATE TABLE IF NOT EXISTS schema_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS videos (
@@ -84,16 +85,65 @@ def connect(db: str | Path, check_same_thread: bool = True) -> sqlite3.Connectio
       confidence REAL, observations TEXT, evaluator_id TEXT NOT NULL DEFAULT 'anonymous',
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+    CREATE TABLE IF NOT EXISTS attention_analyses (
+      id INTEGER PRIMARY KEY, video_id INTEGER NOT NULL REFERENCES videos(id),
+      analyzer_version TEXT NOT NULL, contract_version TEXT NOT NULL,
+      facts_json TEXT NOT NULL, hook_json TEXT NOT NULL, narrative_json TEXT NOT NULL,
+      production_json TEXT NOT NULL, commercial_json TEXT NOT NULL, results_json TEXT NOT NULL,
+      recommendations_json TEXT NOT NULL, overall_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS video_evaluations (
+      id INTEGER PRIMARY KEY, video_id INTEGER NOT NULL REFERENCES videos(id),
+      hook REAL, narrative REAL, production REAL, commercial REAL, cta REAL, clarity REAL,
+      confidence REAL, evaluator_id TEXT NOT NULL, provenance TEXT NOT NULL,
+      evaluated_at TEXT, notes TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS ab_comparisons (
+      id INTEGER PRIMARY KEY, a_video_id INTEGER NOT NULL REFERENCES videos(id),
+      b_video_id INTEGER NOT NULL REFERENCES videos(id), contract_version TEXT NOT NULL,
+      payload_json TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS production_versions (
+      id INTEGER PRIMARY KEY, version_key TEXT NOT NULL UNIQUE,
+      video_id INTEGER REFERENCES videos(id),
+      parent_version_id INTEGER REFERENCES production_versions(id),
+      brief_json TEXT NOT NULL, adapter TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'candidate', output_path TEXT,
+      contract_version TEXT NOT NULL, provenance TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, activated_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS production_jobs (
+      id INTEGER PRIMARY KEY, job_key TEXT NOT NULL UNIQUE,
+      video_id INTEGER REFERENCES videos(id), adapter TEXT NOT NULL, status TEXT NOT NULL,
+      brief_json TEXT NOT NULL, output_json TEXT, output_path TEXT, error TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS dataset_registry (
+      id INTEGER PRIMARY KEY, dataset_key TEXT NOT NULL UNIQUE, status TEXT NOT NULL,
+      dataset_hash TEXT NOT NULL, videos_count INTEGER NOT NULL, episodes_count INTEGER NOT NULL,
+      evaluations_count INTEGER NOT NULL, commercial_records INTEGER NOT NULL,
+      authorization_status TEXT NOT NULL, payload_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS model_registry_state (
+      key TEXT PRIMARY KEY, value TEXT NOT NULL
+    );
     ''')
     migrations = {
       "campaign":"TEXT", "platform":"TEXT", "topic":"TEXT", "target_audience":"TEXT",
       "business_problem":"TEXT", "solution_presented":"TEXT", "publication_status":"TEXT",
       "creative_version":"TEXT", "provenance":"TEXT", "source_kind":"TEXT NOT NULL DEFAULT 'unknown'",
+      "transcript_text":"TEXT", "text_provenance":"TEXT", "human_notes":"TEXT",
+      "animation_style":"TEXT", "target_duration_s":"REAL",
     }
     feedback_migrations = {
       "retention":"REAL", "visual_impact":"REAL", "credibility":"REAL",
       "business_value":"REAL", "commercial_potential":"REAL", "criterion":"TEXT",
       "comparison_type":"TEXT NOT NULL DEFAULT 'full_video'", "confidence":"REAL",
+      "hook":"REAL", "narrative":"REAL", "production":"REAL", "cta":"REAL",
+      "pace":"REAL", "visual_quality":"REAL", "provenance":"TEXT NOT NULL DEFAULT 'human'",
+      "evaluated_at":"TEXT",
     }
     for name, typ in migrations.items():
         if name not in {r[1] for r in con.execute("PRAGMA table_info(videos)")}:

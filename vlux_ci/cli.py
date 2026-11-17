@@ -9,6 +9,16 @@ from .creative import recommend, CONTRACT_VERSION
 from .commercial import summarize
 from .funnel import funnel
 from .proposals import ep025_proposals, payload, CONTRACT_VERSION as PROPOSAL_CONTRACT_VERSION
+from .attention import ANALYZER_VERSION, analyze_attention, latest_attention
+from .ab import compare as ab_compare, record_evaluation, list_evaluations
+from .learning import (
+    dataset_registry, evaluation_report, gate_report, list_experiments, list_models,
+    promote_model, rollback_model, run_gated_training, training_status,
+)
+from .production import (
+    activate_version, history as production_history, list_versions, plan_version,
+    render_version, rollback_version, summary as production_summary,
+)
 
 def dbpath(args): return args.db or str(Path("data")/"vlux.sqlite")
 def cmd_import(a):
@@ -37,7 +47,7 @@ def cmd_import_metadata(a):
 def cmd_analyze(a):
     con=connect(dbpath(a)); row=con.execute("SELECT * FROM videos WHERE id=?",(a.video_id,)).fetchone();
     if not row: raise SystemExit("video_not_found")
-    obj,est,observations=analyze(row["file_path"]); con.execute("INSERT INTO analyses(video_id,analyzer_version,objective_json,aesthetic_json) VALUES(?,?,?,?)",(a.video_id,"0.2.0",json_dumps(obj),json_dumps(est)))
+    obj,est,observations=analyze(row["file_path"]); con.execute("INSERT INTO analyses(video_id,analyzer_version,objective_json,aesthetic_json) VALUES(?,?,?,?)",(a.video_id,ANALYZER_VERSION,json_dumps(obj),json_dumps(est)))
     for item in observations:
         con.execute("INSERT INTO observations(video_id,start_s,end_s,severity,category,message,recommendation,evidence_json) VALUES(?,?,?,?,?,?,?,?)",(a.video_id,item["start_s"],item["end_s"],item["severity"],item["category"],item["message"],item["recommendation"],json_dumps(obj)))
     con.commit(); print(json.dumps({"objective":obj,"estimated":est,"observations":observations},indent=2)); return 0
@@ -48,7 +58,8 @@ def cmd_metric(a):
 def cmd_dataset_status(a):
     con=connect(dbpath(a)); rows=[dict(r) for r in con.execute("SELECT source_kind,COUNT(*) AS count FROM videos GROUP BY source_kind")]
     missing=[dict(r) for r in con.execute("SELECT metric_name,COUNT(*) AS records FROM metrics GROUP BY metric_name")]
-    print(json.dumps({"schema_version":con.execute("SELECT value FROM schema_meta WHERE key='schema_version'").fetchone()[0],"source_kinds":rows,"metrics_present":missing,"unknown_metrics_remain_unknown":True},indent=2)); return 0
+    gate=gate_report(con)
+    print(json.dumps({"schema_version":con.execute("SELECT value FROM schema_meta WHERE key='schema_version'").fetchone()[0],"source_kinds":rows,"metrics_present":missing,"unknown_metrics_remain_unknown":True,"training_state":gate["training_state"],"gate_status":gate["status"],"gate_counts":gate["counts"],"blocking_reasons":gate["blocking_reasons"]},indent=2)); return 0
 def cmd_recommend(a):
     brief=json.loads(Path(a.brief).read_text(encoding="utf-8")); con=connect(dbpath(a)); result=recommend(brief,con)
     text=json.dumps(result,indent=2,ensure_ascii=False); print(text)
@@ -104,7 +115,8 @@ def dashboard(a):
     from .dashboard import serve; serve(dbpath(a),a.host,a.port)
 def cmd_report(a):
     con=connect(dbpath(a)); videos=con.execute("select count(*) from videos").fetchone()[0]; analyses=con.execute("select count(*) from analyses").fetchone()[0]; feedback=con.execute("select count(*) from feedback").fetchone()[0]; models=[dict(x) for x in con.execute("select model_version,approval_status,metrics_json from models order by id desc")]
-    result={"status":"READY_LOCAL","videos":videos,"analyses":analyses,"feedback":feedback,"models":models,"training_state":"review_candidate_or_NO_TRAINING_INSUFFICIENT_DATA","recommendations":["Collect independent human A/B feedback by episode","Do not infer commercial quality or leads from visual features alone","Promote a model only after holdout and human review"]}
+    gate=gate_report(con); attention=con.execute("select count(*) from attention_analyses").fetchone()[0]; evaluations=con.execute("select count(*) from video_evaluations").fetchone()[0]; comparisons=con.execute("select count(*) from ab_comparisons").fetchone()[0]
+    result={"status":"READY_LOCAL","schema_version":con.execute("select value from schema_meta where key='schema_version'").fetchone()[0],"videos":videos,"analyses":analyses,"attention_analyses":attention,"evaluations":evaluations,"ab_comparisons":comparisons,"feedback":feedback,"models":models,"training_state":gate["training_state"],"gate":gate,"production":production_summary(con),"recommendations":["Collect independent human A/B feedback by episode","Do not infer commercial quality or leads from visual features alone","Promote a model only after holdout and named human review"]}
     text=json.dumps(result,indent=2,ensure_ascii=False); print(text)
     if a.output: Path(a.output).write_text(text,encoding='utf-8')
     return 0
@@ -118,6 +130,91 @@ def cmd_rollback(a):
     artifact=Path(row["artifact_path"])
     if not artifact.exists(): print(json.dumps({"status":"ARTIFACT_MISSING","model_version":a.model_version})); return 2
     print(json.dumps({"status":"RECOVERED_READ_ONLY","model_version":a.model_version,"artifact_path":str(artifact),"approval_status":row["approval_status"]},indent=2)); return 0
+def _print(value, output=None):
+    text=json.dumps(value,indent=2,ensure_ascii=False,sort_keys=False); print(text)
+    if output: Path(output).write_text(text,encoding="utf-8")
+    return 0
+
+
+def cmd_annotate(a):
+    con=connect(dbpath(a))
+    if not con.execute("select 1 from videos where id=?",(a.video_id,)).fetchone(): raise SystemExit("video_not_found")
+    fields={"hook":a.hook,"business_problem":a.problem,"solution_presented":a.solution,"cta":a.cta,"target_audience":a.audience,"topic":a.topic,"human_notes":a.notes,"text_provenance":a.text_provenance}
+    if a.transcript_file:
+        fields["transcript_text"]=Path(a.transcript_file).read_text(encoding="utf-8")
+    updates={k:v for k,v in fields.items() if v is not None}
+    if not updates: raise SystemExit("no_fields_to_update")
+    con.execute("update videos set "+",".join(f"{k}=?" for k in updates)+" where id=?",(*updates.values(),a.video_id)); con.commit()
+    row=dict(con.execute("select id,episode,version,hook,business_problem,solution_presented,cta,target_audience,topic,text_provenance,human_notes,transcript_text from videos where id=?",(a.video_id,)).fetchone())
+    if row.get("transcript_text"): row["transcript_text"]=row["transcript_text"][:400]
+    return _print({"status":"ANNOTATED","video":row})
+
+
+def cmd_attention(a):
+    con=connect(dbpath(a)); result=analyze_attention(con,a.video_id,persist=not a.no_persist)
+    return _print(result,a.output)
+
+
+def cmd_evaluate(a):
+    con=connect(dbpath(a)); evaluation_id=record_evaluation(con,a.video_id,a.evaluator,a.provenance,a.hook,a.narrative,a.production,a.commercial,a.cta,a.clarity,a.confidence,a.notes,a.evaluated_at)
+    row=dict(con.execute("select * from video_evaluations where id=?",(evaluation_id,)).fetchone())
+    note="Evaluación humana registrada." if a.provenance=="human" and a.evaluator!="anonymous" else "Evaluación registrada pero NO cuenta para el gate humano (anónima o no humana)."
+    return _print({"status":"EVALUATION_RECORDED","evaluation":row,"gate_note":note,"gate":gate_report(con)["counts"]})
+
+
+def cmd_ab(a):
+    con=connect(dbpath(a)); result=ab_compare(con,a.a,a.b,persist=not a.no_persist); return _print(result,a.output)
+
+
+def cmd_learning_status(a):
+    con=connect(dbpath(a)); result=training_status(con); result["experiments_detail"]=list_experiments(con)[:10]; return _print(result,a.output)
+
+
+def cmd_dataset_register(a):
+    con=connect(dbpath(a)); result=dataset_registry(con); return _print(result,a.output)
+
+
+def cmd_train_gated(a):
+    con=connect(dbpath(a)); result=run_gated_training(con,a.artifacts,a.seed); return _print(result,a.output)
+
+
+def cmd_model_registry(a):
+    con=connect(dbpath(a)); result={"status":training_status(con),"models":list_models(con),"experiments":list_experiments(con)}
+    if a.model_version: result["evaluation"]=evaluation_report(con,a.model_version)
+    return _print(result,a.output)
+
+
+def cmd_model_promote(a):
+    con=connect(dbpath(a)); return _print(promote_model(con,a.model_version,a.approved_by),a.output)
+
+
+def cmd_model_rollback(a):
+    con=connect(dbpath(a)); return _print(rollback_model(con,a.model_version),a.output)
+
+
+def cmd_production_plan(a):
+    con=connect(dbpath(a)); brief=json.loads(Path(a.brief).read_text(encoding="utf-8"))
+    result=plan_version(con,brief,a.adapter,a.video_id,a.parent_version_id); return _print(result,a.output)
+
+
+def cmd_production_render(a):
+    con=connect(dbpath(a)); result=render_version(con,a.version_key,a.output_dir); return _print(result,a.output)
+
+
+def cmd_production_activate(a):
+    con=connect(dbpath(a)); return _print(activate_version(con,a.version_key),a.output)
+
+
+def cmd_production_rollback(a):
+    con=connect(dbpath(a)); return _print(rollback_version(con,a.version_key),a.output)
+
+
+def cmd_production_versions(a):
+    con=connect(dbpath(a)); result={"versions":list_versions(con,a.video_id),"summary":production_summary(con)}
+    if a.version_key: result["history"]=production_history(con,a.version_key)
+    return _print(result,a.output)
+
+
 def parser():
     p=argparse.ArgumentParser(prog="vlux-ci"); p.add_argument("--db",default=None); s=p.add_subparsers(dest="command",required=True)
     q=s.add_parser("import"); q.add_argument("file"); q.add_argument("--episode",required=True); q.add_argument("--version",default="v0.1"); q.add_argument("--campaign",default=None); q.add_argument("--platform",default=None); q.add_argument("--topic",default=None); q.add_argument("--audience",default=None); q.add_argument("--problem",default=None); q.add_argument("--solution",default=None); q.add_argument("--publication-status",default=None); q.add_argument("--provenance",default=None); q.add_argument("--source-kind",choices=["published","review","synthetic","unknown"],default="unknown"); q.add_argument("--approval",default="unknown"); q.add_argument("--permission",default="unknown"); q.set_defaults(fn=cmd_import)
@@ -127,7 +224,22 @@ def parser():
     q=s.add_parser("baseline"); q.set_defaults(fn=cmd_baseline)
     q=s.add_parser("metric"); q.add_argument("video_id",type=int); q.add_argument("name",choices=["views","avg_watch_time_s","retention","completion_rate","comments","likes","saves","shares","profile_visits","link_clicks","conversations","leads","qualified_leads","meetings","proposals","closed_won"]); q.add_argument("--value",type=float,default=None); q.add_argument("--source",required=True); q.add_argument("--observed-at",default=None); q.add_argument("--notes",default=""); q.set_defaults(fn=cmd_metric)
     q=s.add_parser("dataset-status"); q.set_defaults(fn=cmd_dataset_status)
-    q=s.add_parser("train"); q.add_argument("--artifacts",default="artifacts"); q.add_argument("--seed",type=int,default=17); q.add_argument("--min-examples",type=int,default=8); q.set_defaults(fn=cmd_train)
+    q=s.add_parser("train"); q.add_argument("--artifacts",default="artifacts"); q.add_argument("--seed",type=int,default=17); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_train_gated)
+    q=s.add_parser("train-gated"); q.add_argument("--artifacts",default="artifacts"); q.add_argument("--seed",type=int,default=17); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_train_gated)
+    q=s.add_parser("annotate"); q.add_argument("video_id",type=int); q.add_argument("--hook"); q.add_argument("--problem"); q.add_argument("--solution"); q.add_argument("--cta"); q.add_argument("--audience"); q.add_argument("--topic"); q.add_argument("--notes"); q.add_argument("--transcript-file"); q.add_argument("--text-provenance"); q.set_defaults(fn=cmd_annotate)
+    q=s.add_parser("attention"); q.add_argument("video_id",type=int); q.add_argument("--output",default=None); q.add_argument("--no-persist",action="store_true"); q.set_defaults(fn=cmd_attention)
+    q=s.add_parser("evaluate"); q.add_argument("video_id",type=int); q.add_argument("--evaluator",default="anonymous"); q.add_argument("--provenance",choices=["human","ai_assisted","synthetic","demo"],default="human"); q.add_argument("--hook",type=float); q.add_argument("--narrative",type=float); q.add_argument("--production",type=float); q.add_argument("--commercial",type=float); q.add_argument("--cta",type=float); q.add_argument("--clarity",type=float); q.add_argument("--confidence",type=float); q.add_argument("--notes",default=""); q.add_argument("--evaluated-at",default=None); q.set_defaults(fn=cmd_evaluate)
+    q=s.add_parser("ab"); q.add_argument("--a",type=int,required=True); q.add_argument("--b",type=int,required=True); q.add_argument("--output",default=None); q.add_argument("--no-persist",action="store_true"); q.set_defaults(fn=cmd_ab)
+    q=s.add_parser("learning-status"); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_learning_status)
+    q=s.add_parser("dataset-register"); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_dataset_register)
+    q=s.add_parser("model-registry"); q.add_argument("--model-version",default=None); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_model_registry)
+    q=s.add_parser("model-promote"); q.add_argument("model_version"); q.add_argument("--approved-by",required=True); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_model_promote)
+    q=s.add_parser("model-rollback"); q.add_argument("--model-version",default=None); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_model_rollback)
+    q=s.add_parser("production-plan"); q.add_argument("--brief",required=True); q.add_argument("--adapter",choices=["manifest","ffmpeg_animatic"],default="manifest"); q.add_argument("--video-id",type=int,default=None); q.add_argument("--parent-version-id",type=int,default=None); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_production_plan)
+    q=s.add_parser("production-render"); q.add_argument("version_key"); q.add_argument("--output-dir",default="data/production"); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_production_render)
+    q=s.add_parser("production-activate"); q.add_argument("version_key"); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_production_activate)
+    q=s.add_parser("production-rollback"); q.add_argument("version_key"); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_production_rollback)
+    q=s.add_parser("production-versions"); q.add_argument("--video-id",type=int,default=None); q.add_argument("--version-key",default=None); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_production_versions)
     q=s.add_parser("report"); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_report)
     q=s.add_parser("export"); q.add_argument("--output",required=True); q.set_defaults(fn=cmd_export)
     q=s.add_parser("rollback"); q.add_argument("model_version"); q.set_defaults(fn=cmd_rollback)

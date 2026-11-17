@@ -1,10 +1,36 @@
 {
-  "version": "0.4",
-  "last_phase_completed": "REAL_DATA_ACTIVATION",
+  "version": "0.5",
+  "last_phase_completed": "ATTENTION_LAB_PILOT",
   "current_atom": null,
-  "tests": {"unit": 10, "e2e": "V03_E2E_PASS", "verify_script": "PASS"},
-  "data": {"ep011_publication_registered": true, "ep011_video_available": false, "provenance": "USER_PROVIDED_SCREENSHOT", "synthetic_mixed_with_real": false},
-  "learning": {"status": "NO_TRAINING_INSUFFICIENT_DATA", "reason": "one publication; no independent holdout or sufficient human labels"},
-  "pending": ["import authorized EP011 review copy", "analyze EP011 MP4", "collect EP025 proposal preferences", "add platform metrics with dates"],
-  "next_action": "Use start.ps1, import a copied EP011 review MP4, then analyze it"
+  "tests": {"unit": 34, "e2e": ["V03_E2E_PASS", "V05_E2E_PASS"], "verify_script": "PASS"},
+  "pilot": {
+    "episodes": ["EP011", "EP021"],
+    "permission": "authorized_analysis_only",
+    "training_eligible": false,
+    "human_evaluations": 0,
+    "commercial_records": 0,
+    "ab_decision": "HUMAN_REVIEW_AND_RESULTS_REQUIRED",
+    "automatic_winner": null
+  },
+  "data": {
+    "ep011_publication_registered": true,
+    "ep011_video_available": true,
+    "ep011_metric_link": "episode",
+    "provenance": "USER_PROVIDED_SCREENSHOT",
+    "measurement_date": "UNKNOWN",
+    "synthetic_mixed_with_real": false
+  },
+  "learning": {
+    "status": "NO_TRAINING_INSUFFICIENT_DATA",
+    "gate_status": "BLOCKED",
+    "eligible_videos": 0,
+    "reason": "pilot copies are authorized_analysis_only; no identified human evaluations or verified commercial outcomes"
+  },
+  "pending": [
+    "record identified human evaluations for real episodes",
+    "attach verified commercial outcomes with date and provenance",
+    "run the EP021 opening-change experiment when measurement exists",
+    "expand the authorized dataset until the training gate can pass"
+  ],
+  "next_action": "Run one-variable creative experiment on EP021 and record measurement; do not train."
 }

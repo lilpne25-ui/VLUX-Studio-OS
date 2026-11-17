@@ -1,0 +1,178 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vlux.local/contracts/ab-comparison.v0.1.schema.json",
+  "title": "VLUX A/B comparison",
+  "description": "A layered comparison that keeps observed facts, heuristic estimates, human preferences and commercial results separate. No side is declared a winner from estimates alone.",
+  "type": "object",
+  "required": [
+    "contract_version", "status", "evaluated_at", "a", "b", "observed_facts",
+    "estimates", "human_preferences", "commercial_results", "summary",
+    "recommendations", "limitations", "comparison_id"
+  ],
+  "properties": {
+    "contract_version": {"const": "ab-comparison.v0.1"},
+    "status": {"type": "string"},
+    "evaluated_at": {"type": "string", "format": "date-time"},
+    "a": {"$ref": "#/$defs/side"},
+    "b": {"$ref": "#/$defs/side"},
+    "observed_facts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "label", "a", "b", "delta_b_minus_a", "direction", "interpretation"],
+        "properties": {
+          "key": {"type": "string"},
+          "label": {"type": "string"},
+          "unit": {"type": ["string", "null"]},
+          "a": {"type": ["number", "null"]},
+          "b": {"type": ["number", "null"]},
+          "delta_b_minus_a": {"type": ["number", "null"]},
+          "direction": {"type": "string"},
+          "interpretation": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "estimates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "label", "a_estimate", "b_estimate", "delta_b_minus_a", "direction", "interpretation"],
+        "properties": {
+          "key": {"type": "string"},
+          "label": {"type": "string"},
+          "a_estimate": {"type": ["number", "null"]},
+          "b_estimate": {"type": ["number", "null"]},
+          "delta_b_minus_a": {"type": ["number", "null"]},
+          "a_confidence": {"enum": ["none", "low", "medium", "high"]},
+          "b_confidence": {"enum": ["none", "low", "medium", "high"]},
+          "direction": {"type": "string"},
+          "interpretation": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "human_preferences": {
+      "type": "object",
+      "required": ["status", "a", "b", "pairwise", "excluded_non_human", "note"],
+      "properties": {
+        "status": {"enum": ["AVAILABLE", "NOT_AVAILABLE"]},
+        "a": {"$ref": "#/$defs/humanSide"},
+        "b": {"$ref": "#/$defs/humanSide"},
+        "pairwise": {
+          "type": "object",
+          "required": ["status", "counts", "total", "note"],
+          "properties": {
+            "status": {"type": "string"},
+            "counts": {
+              "type": "object",
+              "required": ["A", "B", "tie", "non_human_excluded"],
+              "properties": {
+                "A": {"type": "integer", "minimum": 0},
+                "B": {"type": "integer", "minimum": 0},
+                "tie": {"type": "integer", "minimum": 0},
+                "non_human_excluded": {"type": "integer", "minimum": 0}
+              },
+              "additionalProperties": true
+            },
+            "total": {"type": "integer", "minimum": 0},
+            "note": {"type": "string"}
+          },
+          "additionalProperties": true
+        },
+        "excluded_non_human": {"type": "object"},
+        "note": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "commercial_results": {
+      "type": "object",
+      "required": ["status", "a", "b", "reason", "guardrails"],
+      "properties": {
+        "status": {"enum": ["COMPARABLE", "NOT_COMPARABLE"]},
+        "a": {"type": "object"},
+        "b": {"type": "object"},
+        "reason": {"type": "string"},
+        "guardrails": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "summary": {
+      "type": "object",
+      "required": ["decision_status", "estimated_advantages", "automatic_winner", "winner_policy", "human_evidence", "commercial_evidence"],
+      "properties": {
+        "decision_status": {"type": "string"},
+        "estimated_advantages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["dimension", "label", "favored_side", "delta", "status"],
+            "properties": {
+              "dimension": {"type": "string"},
+              "label": {"type": "string"},
+              "favored_side": {"enum": ["A", "B"]},
+              "delta": {"type": "number"},
+              "status": {"const": "ESTIMATE_ONLY"}
+            },
+            "additionalProperties": true
+          }
+        },
+        "automatic_winner": {"type": "null"},
+        "winner_policy": {"type": "string"},
+        "human_evidence": {"type": "boolean"},
+        "commercial_evidence": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["priority", "action", "reason", "status"],
+        "properties": {
+          "priority": {"enum": ["low", "medium", "high"]},
+          "action": {"type": "string"},
+          "reason": {"type": "string"},
+          "status": {"const": "PROPOSAL"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "comparison_id": {"type": "integer"}
+  },
+  "$defs": {
+    "side": {
+      "type": "object",
+      "required": ["video_id", "episode", "label", "attention_status", "overall_estimate", "first_change"],
+      "properties": {
+        "video_id": {"type": "integer"},
+        "episode": {"type": "string"},
+        "label": {"enum": ["A", "B"]},
+        "attention_status": {"type": ["string", "null"]},
+        "overall_estimate": {"type": ["integer", "null"], "minimum": 0, "maximum": 100},
+        "first_change": {"type": ["object", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "humanSide": {
+      "type": "object",
+      "required": ["status", "evaluations", "anonymous_evaluations", "evaluators", "dimension_means_1_to_5", "evaluated_at", "provenance", "note"],
+      "properties": {
+        "status": {"enum": ["AVAILABLE", "NOT_AVAILABLE"]},
+        "evaluations": {"type": "integer", "minimum": 0},
+        "anonymous_evaluations": {"type": "integer", "minimum": 0},
+        "evaluators": {"type": "integer", "minimum": 0},
+        "dimension_means_1_to_5": {
+          "type": "object",
+          "additionalProperties": {"type": "number", "minimum": 1, "maximum": 5}
+        },
+        "evaluated_at": {"type": "array", "items": {"type": "string"}},
+        "provenance": {"const": "human"},
+        "note": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vlux.local/contracts/attention-lab.v0.1.schema.json",
+  "title": "VLUX Attention Lab analysis",
+  "description": "Heuristic, estimate-only creative analysis derived from observable media facts. This contract must never be interpreted as a validated virality prediction, a human preference, or a commercial result.",
+  "type": "object",
+  "required": [
+    "contract_version", "analyzer_version", "status", "evaluated_at", "video", "facts",
+    "text_source", "hook", "narrative", "production", "commercial_value", "results",
+    "overall", "recommendations", "first_change", "limitations", "attention_id"
+  ],
+  "properties": {
+    "contract_version": {"const": "attention-lab.v0.1"},
+    "analyzer_version": {"type": "string"},
+    "status": {"const": "ESTIMATE_ONLY_NOT_VALIDATED"},
+    "evaluated_at": {"type": "string", "format": "date-time"},
+    "video": {
+      "type": "object",
+      "required": ["id", "episode", "version", "permission_status", "file_hash"],
+      "properties": {
+        "id": {"type": "integer"},
+        "episode": {"type": "string"},
+        "version": {"type": "string"},
+        "duration_s": {"type": ["number", "null"]},
+        "resolution": {"type": "string"},
+        "source_kind": {"type": ["string", "null"]},
+        "permission_status": {"type": ["string", "null"]},
+        "file_hash": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "facts": {
+      "type": "object",
+      "description": "Observed FFprobe/OpenCV facts. These describe the file, not its business performance.",
+      "required": ["source", "analysis_id", "duration_s", "fps", "has_audio"],
+      "properties": {
+        "source": {"type": "string"},
+        "analysis_id": {"type": "integer"},
+        "duration_s": {"type": ["number", "null"]},
+        "fps": {"type": ["number", "null"]},
+        "width": {"type": ["integer", "null"]},
+        "height": {"type": ["integer", "null"]},
+        "has_audio": {"type": ["boolean", "null"]},
+        "cut_count": {"type": ["integer", "null"]},
+        "cut_times": {"type": "array", "items": {"type": "number"}},
+        "first_3s_cut_count": {"type": ["integer", "null"]},
+        "avg_shot_s": {"type": ["number", "null"]},
+        "motion_mean": {"type": ["number", "null"]},
+        "motion_mean_full": {"type": ["number", "null"]},
+        "first_3s_motion": {"type": ["number", "null"]},
+        "first_second_motion": {"type": ["number", "null"]},
+        "first_second_brightness": {"type": ["number", "null"]},
+        "sample_count": {"type": ["integer", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "text_source": {
+      "type": "object",
+      "required": ["provenance", "available", "human_confirmed", "ai_assisted", "verbatim_transcript"],
+      "properties": {
+        "provenance": {"type": ["string", "null"]},
+        "available": {"type": "boolean"},
+        "human_confirmed": {"type": "boolean"},
+        "ai_assisted": {"type": "boolean"},
+        "verbatim_transcript": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "hook": {"$ref": "#/$defs/componentDimension"},
+    "narrative": {"$ref": "#/$defs/narrativeDimension"},
+    "production": {"$ref": "#/$defs/componentDimension"},
+    "commercial_value": {"$ref": "#/$defs/commercialDimension"},
+    "results": {
+      "type": "object",
+      "description": "Observed platform and commercial layer. Likes are never treated as leads or sales.",
+      "required": ["status", "publications", "observed_metrics", "commercial_records", "commercial_signal", "likes_are_not_sales"],
+      "properties": {
+        "status": {"enum": ["AVAILABLE_PARTIAL", "NOT_AVAILABLE"]},
+        "publications": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["publication_id", "episode", "match_basis", "metrics"],
+            "properties": {
+              "publication_id": {"type": "integer"},
+              "episode": {"type": "string"},
+              "platform": {"type": ["string", "null"]},
+              "provenance": {"type": ["string", "null"]},
+              "measured_at": {"type": ["string", "null"]},
+              "publication_status": {"type": ["string", "null"]},
+              "match_basis": {"enum": ["video_id", "episode"]},
+              "match_note": {"type": "string"},
+              "metrics": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "required": ["value", "status", "provenance"],
+                  "properties": {
+                    "value": {"type": ["number", "null"]},
+                    "status": {"type": "string"},
+                    "provenance": {"type": ["string", "null"]},
+                    "measured_at": {"type": ["string", "null"]}
+                  },
+                  "additionalProperties": true
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "observed_metrics": {"type": "integer", "minimum": 0},
+        "commercial_records": {"type": "integer", "minimum": 0},
+        "commercial_signal": {
+          "type": "object",
+          "required": ["status", "note"],
+          "properties": {
+            "leads": {"type": ["number", "null"]},
+            "status": {"type": "string"},
+            "note": {"type": "string"}
+          },
+          "additionalProperties": true
+        },
+        "likes_observed": {"type": ["number", "null"]},
+        "likes_are_not_sales": {"const": true},
+        "guardrails": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "overall": {
+      "type": "object",
+      "required": ["score", "band", "confidence", "coverage", "status", "explanation"],
+      "properties": {
+        "score": {"type": "integer", "minimum": 0, "maximum": 100},
+        "band": {"type": "string"},
+        "confidence": {"enum": ["low", "medium", "high"]},
+        "coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "dimensions": {"type": "object", "additionalProperties": {"type": ["number", "null"]}},
+        "status": {"const": "ESTIMATE_NOT_VALIDATED"},
+        "explanation": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "recommendations": {"type": "array", "items": {"$ref": "#/$defs/recommendation"}},
+    "first_change": {"anyOf": [{"$ref": "#/$defs/recommendation"}, {"type": "null"}]},
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "attention_id": {"type": "integer"}
+  },
+  "$defs": {
+    "component": {
+      "type": "object",
+      "required": ["key", "label", "value", "score", "weight", "evidence", "source"],
+      "properties": {
+        "key": {"type": "string"},
+        "label": {"type": "string"},
+        "value": {"type": ["number", "null"]},
+        "unit": {"type": ["string", "null"]},
+        "score": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "evidence": {"type": "string"},
+        "source": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "componentDimension": {
+      "type": "object",
+      "required": ["score", "band", "confidence", "coverage", "components", "evidence", "limitations"],
+      "properties": {
+        "score": {"type": ["integer", "null"], "minimum": 0, "maximum": 100},
+        "band": {"type": "string"},
+        "confidence": {"enum": ["none", "low", "medium", "high"]},
+        "coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "components": {"type": "array", "items": {"$ref": "#/$defs/component"}},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "narrativeDimension": {
+      "type": "object",
+      "required": ["score", "band", "confidence", "coverage", "elements", "ordered_elements", "text_source", "evidence", "limitations"],
+      "properties": {
+        "score": {"type": ["integer", "null"], "minimum": 0, "maximum": 100},
+        "band": {"type": "string"},
+        "confidence": {"enum": ["none", "low", "medium", "high"]},
+        "coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "elements": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["status", "source", "evidence"],
+            "properties": {
+              "status": {"type": "string"},
+              "source": {"type": "string"},
+              "evidence": {"type": "string"},
+              "excerpt": {"type": "string"}
+            },
+            "additionalProperties": true
+          }
+        },
+        "ordered_elements": {"type": "integer", "minimum": 0},
+        "text_source": {"type": "object"},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "commercialDimension": {
+      "type": "object",
+      "required": ["score", "band", "confidence", "coverage", "dimensions", "evidence", "commercial_signal", "limitations"],
+      "properties": {
+        "score": {"type": ["integer", "null"], "minimum": 0, "maximum": 100},
+        "band": {"type": "string"},
+        "confidence": {"enum": ["none", "low", "medium", "high"]},
+        "coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "dimensions": {"type": "object", "additionalProperties": true},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "commercial_signal": {"type": "object"},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "recommendation": {
+      "type": "object",
+      "required": ["priority", "dimension", "status", "action", "reason", "evidence", "test_metric"],
+      "properties": {
+        "priority": {"enum": ["low", "medium", "high"]},
+        "dimension": {"type": "string"},
+        "status": {"const": "PROPOSAL"},
+        "action": {"type": "string"},
+        "reason": {"type": "string"},
+        "evidence": {"type": "array", "items": {"type": "string"}},
+        "test_metric": {"type": "string"}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

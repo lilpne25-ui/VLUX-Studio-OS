@@ -36,13 +36,26 @@ def dataset(con):
 
 def vector(row): return [float(row.get(k) or 0) for k in FEATURE_NAMES]
 
-def train(con, artifact_dir, seed=17, min_examples=8):
-    rows,digest=dataset(con)
+def _digest(rows):
+    payload=[{"id":r["id"],"file_hash":r["file_hash"],"label":y,"features":[r.get(k) for k in FEATURE_NAMES]} for r,y in rows]
+    return __import__('hashlib').sha256(json_dumps(payload).encode()).hexdigest()
+
+
+def train_rows(rows, artifact_dir, seed=17, min_examples=8, digest=None):
+    """Train on explicit (row, label) pairs; callers own label provenance.
+
+    The holdout is always one complete episode, never a random scene split.
+    """
+    digest = digest or _digest(rows)
     episodes={r["episode"] for r,_ in rows}
     if len(rows)<min_examples or len(episodes)<2: return {"status":"NO_TRAINING_INSUFFICIENT_DATA","examples":len(rows),"episodes":len(episodes),"dataset_hash":digest}
     # Group holdout: last episode lexicographically, never scene-level random split.
     holdout_ep=sorted(episodes)[-1]; train_rows=[x for x in rows if x[0]["episode"]!=holdout_ep]; test_rows=[x for x in rows if x[0]["episode"]==holdout_ep]
     if len(train_rows)<4 or len(test_rows)<2 or len({int(y>=.5) for _,y in train_rows})<2: return {"status":"NO_TRAINING_INSUFFICIENT_DATA","reason":"holdout_or_class_balance","examples":len(rows),"dataset_hash":digest}
+    train_classes={int(y>=.5) for _,y in train_rows}
+    test_classes={int(y>=.5) for _,y in test_rows}
+    if len(train_classes)<2 or len(test_classes)<2:
+        return {"status":"NO_TRAINING_INSUFFICIENT_DATA","reason":"holdout_or_class_balance","examples":len(rows),"dataset_hash":digest}
     try:
         import numpy as np
         X=np.array([vector(r) for r,_ in train_rows],dtype=float); y=np.array([1 if z>=.5 else 0 for _,z in train_rows],dtype=float); mu=X.mean(0); sd=X.std(0); sd[sd==0]=1; X=(X-mu)/sd
@@ -57,8 +70,13 @@ def train(con, artifact_dir, seed=17, min_examples=8):
         base=Baseline(); by=[int(base.score(r)>=.5) for r,_ in test_rows]; bacc=sum(a==b for a,b in zip(yt,by))/len(yt)
         artifact=Path(artifact_dir)/f"model-{digest[:12]}.json"; artifact.parent.mkdir(parents=True,exist_ok=True)
         artifact.write_text(json.dumps({"type":"logistic_numpy","seed":seed,"feature_names":FEATURE_NAMES,"mean":mu.tolist(),"scale":sd.tolist(),"weights":w.tolist(),"bias":b},indent=2),encoding="utf-8")
-        return {"status":"TRAINED","examples":len(rows),"train_examples":len(train_rows),"holdout_examples":len(test_rows),"holdout_episode":holdout_ep,"accuracy":acc,"baseline_accuracy":bacc,"dataset_hash":digest,"artifact_path":str(artifact),"artifact_hash":sha256_file(artifact),"seed":seed}
+        return {"status":"TRAINED","examples":len(rows),"train_examples":len(train_rows),"holdout_examples":len(test_rows),"holdout_episode":holdout_ep,"accuracy":acc,"baseline_accuracy":bacc,"dataset_hash":digest,"artifact_path":str(artifact),"artifact_hash":sha256_file(artifact),"seed":seed,"holdout_design":"complete_episode","label_source":"explicit_caller_labels"}
     except Exception as e: return {"status":"TRAINING_FAILED","error":str(e),"dataset_hash":digest}
+
+
+def train(con, artifact_dir, seed=17, min_examples=8):
+    rows,digest=dataset(con)
+    return train_rows(rows,artifact_dir,seed,min_examples,digest=digest)
 
 def infer(artifact, row):
     d=json.loads(Path(artifact).read_text(encoding="utf-8")); import numpy as np

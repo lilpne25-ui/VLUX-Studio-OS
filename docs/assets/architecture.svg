@@ -1,10 +1,125 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 620" role="img" aria-labelledby="title">
-<title id="title">VLUX Studio OS architecture</title>
-<rect width="1400" height="620" rx="24" fill="#0b1118"/>
-<g font-family="Arial,Helvetica,sans-serif" text-anchor="middle">
-<text x="700" y="58" fill="#f4f7fa" font-size="30" font-weight="700">VLUX Studio OS · Local intelligence loop</text>
-<text x="700" y="92" fill="#92a3b3" font-size="16">Read-only media analysis · human feedback · governed recommendations</text>
-<g fill="#16232e" stroke="#77e4f4" stroke-width="2"><rect x="70" y="160" width="210" height="100" rx="14"/><rect x="340" y="160" width="210" height="100" rx="14"/><rect x="610" y="160" width="210" height="100" rx="14"/><rect x="880" y="160" width="210" height="100" rx="14"/><rect x="1150" y="160" width="180" height="100" rx="14"/><rect x="250" y="390" width="250" height="100" rx="14"/><rect x="575" y="390" width="250" height="100" rx="14"/><rect x="900" y="390" width="250" height="100" rx="14"/></g>
-<g fill="#f4f7fa" font-size="19"><text x="175" y="205">Video assets</text><text x="175" y="232" fill="#9cabb8" font-size="15">authorized copies</text><text x="445" y="205">FFprobe</text><text x="445" y="232" fill="#9cabb8" font-size="15">technical facts</text><text x="715" y="205">OpenCV</text><text x="715" y="232" fill="#9cabb8" font-size="15">visual features</text><text x="985" y="205">SQLite</text><text x="985" y="232" fill="#9cabb8" font-size="15">dataset + evidence</text><text x="1240" y="205">JSON</text><text x="1240" y="232" fill="#9cabb8" font-size="15">contracts</text><text x="375" y="435">Human preference</text><text x="375" y="462" fill="#9cabb8" font-size="15">A/B evaluation</text><text x="700" y="435">Creative Director</text><text x="700" y="462" fill="#9cabb8" font-size="15">proposal only</text><text x="1025" y="435">Dashboard / CLI</text><text x="1025" y="462" fill="#9cabb8" font-size="15">local workflow</text></g>
-<g stroke="#c4d0db" stroke-width="2" fill="none" marker-end="url(#a)"><path d="M280 210h60"/><path d="M550 210h60"/><path d="M820 210h60"/><path d="M1090 210h60"/><path d="M715 260v125"/><path d="M500 440h75"/><path d="M825 440h75"/></g><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0l8 4-8 4z" fill="#c4d0db"/></marker></defs>
-</g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">VLUX Studio OS V0.5 architecture</title>
+  <desc id="desc">Authorized video flows through FFprobe and OpenCV into an evidence store, then Attention Lab and a layered A/B comparison. Human evaluations feed recommendations and a Creative Director brief, then a local production adapter and version registry. A separate training path stays blocked until the gate passes.</desc>
+  <rect width="1400" height="760" rx="24" fill="#0b1118"/>
+  <g font-family="Arial,Helvetica,sans-serif" text-anchor="middle">
+    <text x="700" y="52" fill="#f4f7fa" font-size="30" font-weight="700">VLUX Studio OS · V0.5 Attention Lab</text>
+    <text x="700" y="84" fill="#92a3b3" font-size="16">Local evidence pipeline · four separate layers · human approval before production</text>
+
+    <!-- Row 1 -->
+    <g fill="#14212c" stroke="#2b4b60" stroke-width="1.5">
+      <rect x="45" y="120" width="200" height="108" rx="13"/>
+      <rect x="285" y="120" width="200" height="108" rx="13"/>
+      <rect x="525" y="120" width="210" height="108" rx="13"/>
+      <rect x="775" y="120" width="230" height="108" rx="13" stroke="#77e4f4"/>
+      <rect x="1045" y="120" width="310" height="108" rx="13" stroke="#77e4f4"/>
+    </g>
+    <g fill="#f4f7fa" font-size="17" font-weight="700">
+      <text x="145" y="162">AUTHORIZED COPY</text>
+      <text x="385" y="162">FFPROBE / OPENCV</text>
+      <text x="630" y="162">SQLITE 0.5</text>
+      <text x="890" y="162">ATTENTION LAB</text>
+      <text x="1200" y="162">LAYERED A/B</text>
+    </g>
+    <g fill="#9fb0c0" font-size="13.5">
+      <text x="145" y="188">permission + SHA-256</text>
+      <text x="385" y="188">CPU facts + timeline</text>
+      <text x="630" y="188">evidence store</text>
+      <text x="890" y="188">estimate-only analysis</text>
+      <text x="1200" y="188">facts · estimates · humans</text>
+      <text x="145" y="208">local and git-ignored</text>
+      <text x="385" y="208">cuts · motion · luminance</text>
+      <text x="630" y="208">videos · analyses · results</text>
+      <text x="890" y="208">hook · narrative · production</text>
+      <text x="1200" y="208">human preference · results</text>
+    </g>
+    <g stroke="#c4d0db" stroke-width="1.8" fill="none" marker-end="url(#arrow)">
+      <path d="M245 174h28"/>
+      <path d="M485 174h28"/>
+      <path d="M735 174h28"/>
+      <path d="M1005 174h28"/>
+    </g>
+
+    <!-- Row 2 -->
+    <g fill="#101d27" stroke="#2b4b60" stroke-width="1.5">
+      <rect x="45" y="296" width="240" height="108" rx="13" stroke="#8ecf7a"/>
+      <rect x="325" y="296" width="240" height="108" rx="13"/>
+      <rect x="605" y="296" width="240" height="108" rx="13"/>
+      <rect x="885" y="296" width="240" height="108" rx="13"/>
+      <rect x="1165" y="296" width="190" height="108" rx="13"/>
+    </g>
+    <g fill="#f4f7fa" font-size="17" font-weight="700">
+      <text x="165" y="338">HUMAN EVIDENCE</text>
+      <text x="445" y="338">RECOMMENDATIONS</text>
+      <text x="725" y="338">CREATIVE DIRECTOR</text>
+      <text x="1005" y="338">PRODUCTION ADAPTER</text>
+      <text x="1260" y="338">VERSION REGISTRY</text>
+    </g>
+    <g fill="#9fb0c0" font-size="13.5">
+      <text x="165" y="364">identified · 1–5 scale</text>
+      <text x="445" y="364">proposal + test metric</text>
+      <text x="725" y="364">reviewable brief</text>
+      <text x="1005" y="364">manifest · CPU animatic</text>
+      <text x="1260" y="364">activate · rollback</text>
+      <text x="165" y="384">anonymous / AI excluded</text>
+      <text x="445" y="384">never an automatic verdict</text>
+      <text x="725" y="384">PROPOSAL_ONLY</text>
+      <text x="1005" y="384">no GPU · no weights</text>
+      <text x="1260" y="384">rendered before active</text>
+    </g>
+    <g stroke="#c4d0db" stroke-width="1.8" fill="none" marker-end="url(#arrow)">
+      <path d="M285 350h30"/>
+      <path d="M565 350h30"/>
+      <path d="M845 350h30"/>
+      <path d="M1125 350h30"/>
+    </g>
+    <g stroke="#5b7488" stroke-width="1.5" stroke-dasharray="5 6" fill="none" marker-end="url(#arrowDim)">
+      <path d="M890 228v24H165v40"/>
+      <path d="M1200 228v42H445v22"/>
+    </g>
+
+    <!-- Training card -->
+    <rect x="45" y="455" width="1310" height="205" rx="16" fill="#0d1822" stroke="#7a4c58" stroke-width="1.5"/>
+    <text x="70" y="489" fill="#f1b7bf" font-size="16" font-weight="700" text-anchor="start">TRAINING PATH · BLOCKED BY DESIGN</text>
+    <text x="1325" y="489" fill="#f1b7bf" font-size="13" text-anchor="end">NO_TRAINING_INSUFFICIENT_DATA</text>
+    <g fill="#16242f" stroke="#3a5367" stroke-width="1.4">
+      <rect x="75" y="512" width="200" height="72" rx="11"/>
+      <rect x="320" y="512" width="200" height="72" rx="11" stroke="#c98b96"/>
+      <rect x="565" y="512" width="230" height="72" rx="11"/>
+      <rect x="840" y="512" width="200" height="72" rx="11"/>
+      <rect x="1085" y="512" width="240" height="72" rx="11"/>
+    </g>
+    <g fill="#e6edf4" font-size="15" font-weight="700">
+      <text x="175" y="541">DATASET REGISTRY</text>
+      <text x="420" y="541">TRAINING GATE</text>
+      <text x="680" y="541">EXPERIMENT</text>
+      <text x="940" y="541">EVALUATION</text>
+      <text x="1205" y="541">MODEL REGISTRY</text>
+    </g>
+    <g fill="#9fb0c0" font-size="13">
+      <text x="175" y="564">hash + eligibility</text>
+      <text x="420" y="564">12 videos · 4 episodes</text>
+      <text x="680" y="564">episode-level holdout</text>
+      <text x="940" y="564">baseline vs candidate</text>
+      <text x="1205" y="564">manual named approval</text>
+    </g>
+    <g stroke="#8a9db0" stroke-width="1.6" fill="none" marker-end="url(#arrowDim)">
+      <path d="M275 548h35"/>
+      <path d="M520 548h35"/>
+      <path d="M795 548h35"/>
+      <path d="M1040 548h35"/>
+    </g>
+    <text x="700" y="622" fill="#8ea1b2" font-size="13.5">No weights downloaded · no GPU used · no synthetic-only training · no automatic promotion</text>
+
+    <!-- Footer layers -->
+    <text x="700" y="708" fill="#8ea1b2" font-size="13.5">Four separate layers, never merged: observed facts ≠ heuristic estimates ≠ human preference ≠ commercial results</text>
+  </g>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0l8 4-8 4z" fill="#c4d0db"/>
+    </marker>
+    <marker id="arrowDim" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0l8 4-8 4z" fill="#8a9db0"/>
+    </marker>
+  </defs>
+</svg>

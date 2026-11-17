@@ -1,6 +1,73 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 360" role="img" aria-labelledby="title">
-<title id="title">VLUX Studio OS workflow</title><rect width="1400" height="360" rx="24" fill="#0b1118"/>
-<g font-family="Arial,Helvetica,sans-serif" text-anchor="middle"><text x="700" y="52" fill="#f4f7fa" font-size="28" font-weight="700">From footage to better creative decisions</text>
-<g fill="#15222c" stroke="#78e7f8" stroke-width="2"><rect x="50" y="130" width="180" height="90" rx="14"/><rect x="285" y="130" width="180" height="90" rx="14"/><rect x="520" y="130" width="180" height="90" rx="14"/><rect x="755" y="130" width="180" height="90" rx="14"/><rect x="990" y="130" width="180" height="90" rx="14"/><rect x="1205" y="130" width="145" height="90" rx="14"/></g>
-<g fill="#f4f7fa" font-size="19"><text x="140" y="170">INGEST</text><text x="140" y="198" fill="#a9b7c5" font-size="14">copy + hash</text><text x="375" y="170">ANALYZE</text><text x="375" y="198" fill="#a9b7c5" font-size="14">facts + timeline</text><text x="610" y="170">EVALUATE</text><text x="610" y="198" fill="#a9b7c5" font-size="14">human A/B</text><text x="845" y="170">RECOMMEND</text><text x="845" y="198" fill="#a9b7c5" font-size="14">creative brief</text><text x="1080" y="170">COMPARE</text><text x="1080" y="198" fill="#a9b7c5" font-size="14">experiment</text><text x="1277" y="170">LEARN</text><text x="1277" y="198" fill="#a9b7c5" font-size="14">governed</text></g>
-<g stroke="#c4d0db" stroke-width="2" marker-end="url(#a)"><path d="M230 175h50"/><path d="M465 175h50"/><path d="M700 175h50"/><path d="M935 175h50"/><path d="M1170 175h30"/></g><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0l8 4-8 4z" fill="#c4d0db"/></marker></defs></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 390" role="img" aria-labelledby="title desc">
+  <title id="title">VLUX Studio OS V0.5 production workflow</title>
+  <desc id="desc">A nine-step loop: authorized copy, observed facts, Attention Lab estimates, layered A/B, human evaluation, recommendation, Creative Director brief, local production version, quality analysis and human approval.</desc>
+  <rect width="1400" height="390" rx="24" fill="#0b1118"/>
+  <g font-family="Arial,Helvetica,sans-serif" text-anchor="middle">
+    <text x="700" y="48" fill="#f4f7fa" font-size="28" font-weight="700">From an authorized video to a reviewable production decision</text>
+    <text x="700" y="78" fill="#92a3b3" font-size="15">Every step records provenance. No step publishes, promotes or spends without a human decision.</text>
+
+    <g fill="#14212c" stroke="#2b4b60" stroke-width="1.5">
+      <rect x="32" y="128" width="142" height="94" rx="12"/>
+      <rect x="192" y="128" width="142" height="94" rx="12"/>
+      <rect x="352" y="128" width="142" height="94" rx="12" stroke="#77e4f4"/>
+      <rect x="512" y="128" width="142" height="94" rx="12" stroke="#77e4f4"/>
+      <rect x="672" y="128" width="142" height="94" rx="12" stroke="#8ecf7a"/>
+      <rect x="832" y="128" width="142" height="94" rx="12"/>
+      <rect x="992" y="128" width="142" height="94" rx="12"/>
+      <rect x="1152" y="128" width="142" height="94" rx="12"/>
+      <rect x="1312" y="128" width="56" height="94" rx="12"/>
+    </g>
+    <g fill="#f4f7fa" font-size="15" font-weight="700">
+      <text x="103" y="158">01 INGEST</text>
+      <text x="263" y="158">02 FACTS</text>
+      <text x="423" y="158">03 ESTIMATE</text>
+      <text x="583" y="158">04 A/B</text>
+      <text x="743" y="158">05 HUMAN</text>
+      <text x="903" y="158">06 PROPOSE</text>
+      <text x="1063" y="158">07 BRIEF</text>
+      <text x="1223" y="158">08 PRODUCE</text>
+      <text x="1340" y="158">09</text>
+    </g>
+    <g fill="#9fb0c0" font-size="12.5">
+      <text x="103" y="182">authorized copy</text>
+      <text x="263" y="182">FFprobe/OpenCV</text>
+      <text x="423" y="182">Attention Lab</text>
+      <text x="583" y="182">four layers</text>
+      <text x="743" y="182">identified 1–5</text>
+      <text x="903" y="182">recommendation</text>
+      <text x="1063" y="182">Creative Director</text>
+      <text x="1223" y="182">local adapter</text>
+      <text x="1340" y="182">QA</text>
+      <text x="103" y="202">hash + permission</text>
+      <text x="263" y="202">cuts · motion</text>
+      <text x="423" y="202">estimate only</text>
+      <text x="583" y="202">no auto-winner</text>
+      <text x="743" y="202">named evaluator</text>
+      <text x="903" y="202">test metric</text>
+      <text x="1063" y="202">PROPOSAL_ONLY</text>
+      <text x="1223" y="202">manifest / CPU</text>
+      <text x="1340" y="202">approve</text>
+    </g>
+    <g stroke="#c4d0db" stroke-width="1.6" fill="none" marker-end="url(#a)">
+      <path d="M174 175h12"/><path d="M334 175h12"/><path d="M494 175h12"/><path d="M654 175h12"/>
+      <path d="M814 175h12"/><path d="M974 175h12"/><path d="M1134 175h12"/><path d="M1294 175h12"/>
+    </g>
+
+    <!-- feedback loop -->
+    <path d="M1340 222v66H743v-60" fill="none" stroke="#5b7488" stroke-width="1.5" stroke-dasharray="5 6" marker-end="url(#b)"/>
+    <text x="1042" y="278" fill="#8299ab" font-size="12.5">version + quality evidence returns to human evaluation; rollback is always available</text>
+
+    <g fill="#0f1b25" stroke="#2b4b60" stroke-width="1.4">
+      <rect x="32" y="312" width="420" height="46" rx="10"/>
+      <rect x="472" y="312" width="420" height="46" rx="10"/>
+      <rect x="912" y="312" width="456" height="46" rx="10" stroke="#7a4c58"/>
+    </g>
+    <text x="242" y="340" fill="#bcd2e4" font-size="13">CPU-only · local SQLite · versioned JSON contracts</text>
+    <text x="682" y="340" fill="#bcd2e4" font-size="13">No platform credentials · no external paid service</text>
+    <text x="1140" y="340" fill="#f1b7bf" font-size="13">Training separate and blocked: NO_TRAINING_INSUFFICIENT_DATA</text>
+  </g>
+  <defs>
+    <marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0l8 4-8 4z" fill="#c4d0db"/></marker>
+    <marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0l8 4-8 4z" fill="#5b7488"/></marker>
+  </defs>
+</svg>

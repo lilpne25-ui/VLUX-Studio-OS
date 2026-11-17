@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vlux.local/contracts/learning-gate.v0.1.schema.json",
+  "title": "VLUX learning and training gate",
+  "description": "Reports whether training is permitted. The default and current state is blocked until legitimate videos, identified human evaluations, commercial records and an episode-level holdout exist.",
+  "type": "object",
+  "required": [
+    "contract_version", "evaluated_at", "training_state", "gate",
+    "active_model_version", "previous_model_version", "experiments", "models", "model_created"
+  ],
+  "properties": {
+    "contract_version": {"const": "learning-gate.v0.1"},
+    "evaluated_at": {"type": "string", "format": "date-time"},
+    "training_state": {"enum": ["NO_TRAINING_INSUFFICIENT_DATA", "ELIGIBLE_NOT_TRAINED", "TRAINED_CANDIDATE", "ACTIVE_MODEL"]},
+    "gate": {
+      "type": "object",
+      "required": ["status", "training_state", "evaluated_at", "thresholds", "checks", "blocking_reasons", "counts"],
+      "properties": {
+        "status": {"enum": ["BLOCKED", "ELIGIBLE"]},
+        "training_state": {"type": "string"},
+        "evaluated_at": {"type": "string", "format": "date-time"},
+        "thresholds": {
+          "type": "object",
+          "required": ["eligible_videos", "independent_episodes", "human_evaluations", "evaluated_videos", "commercial_records", "minimum_label_classes", "minimum_episodes_with_labels", "holdout_design"],
+          "properties": {
+            "eligible_videos": {"type": "integer", "minimum": 1},
+            "independent_episodes": {"type": "integer", "minimum": 1},
+            "human_evaluations": {"type": "integer", "minimum": 1},
+            "evaluated_videos": {"type": "integer", "minimum": 1},
+            "commercial_records": {"type": "integer", "minimum": 1},
+            "minimum_label_classes": {"type": "integer", "minimum": 1},
+            "minimum_episodes_with_labels": {"type": "integer", "minimum": 1},
+            "holdout_design": {"const": "complete_episode"}
+          },
+          "additionalProperties": true
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "label", "have", "required", "ok", "note"],
+            "properties": {
+              "name": {"type": "string"},
+              "label": {"type": "string"},
+              "have": {"type": "integer", "minimum": 0},
+              "required": {"type": "integer", "minimum": 0},
+              "ok": {"type": "boolean"},
+              "note": {"type": "string"}
+            },
+            "additionalProperties": true
+          }
+        },
+        "counts": {"type": "object"},
+        "blocking_reasons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "have", "required", "message"],
+            "properties": {
+              "name": {"type": "string"},
+              "have": {"type": "integer", "minimum": 0},
+              "required": {"type": "integer", "minimum": 0},
+              "message": {"type": "string"}
+            },
+            "additionalProperties": true
+          }
+        },
+        "warnings": {"type": "array", "items": {"type": "string"}},
+        "authorization_status": {"type": "string"},
+        "never_auto_train": {"type": "boolean"},
+        "policy": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "active_model_version": {"type": ["string", "null"]},
+    "previous_model_version": {"type": ["string", "null"]},
+    "experiments": {"type": "integer", "minimum": 0},
+    "models": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["model_version", "model_type", "dataset_hash", "metrics", "approval_status", "created_at"],
+        "properties": {
+          "model_version": {"type": "string"},
+          "model_type": {"type": "string"},
+          "dataset_hash": {"type": "string"},
+          "metrics": {"type": "object"},
+          "artifact_path": {"type": ["string", "null"]},
+          "approval_status": {"type": "string"},
+          "created_at": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    },
+    "model_created": {"type": "boolean"}
+  },
+  "additionalProperties": true
+}

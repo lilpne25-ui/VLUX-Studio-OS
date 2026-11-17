@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vlux.local/contracts/production-manifest.v0.1.schema.json",
+  "title": "VLUX production adapter manifest",
+  "description": "Local production contract emitted by the manifest or CPU ffmpeg_animatic adapter. It is never AI-generated video and never a final render.",
+  "type": "object",
+  "required": ["contract_version", "version_key", "adapter", "status", "generation", "guardrails"],
+  "properties": {
+    "contract_version": {"const": "production-manifest.v0.1"},
+    "version_key": {"type": "string"},
+    "adapter": {"enum": ["manifest", "ffmpeg_animatic"]},
+    "status": {"enum": ["PLACEHOLDER_NO_RENDER", "PLACEHOLDER_RENDERED"]},
+    "source_brief_contract": {"type": "string"},
+    "episode": {"type": ["string", "null"]},
+    "duration_s": {"type": ["number", "null"]},
+    "resolution": {"type": ["string", "null"]},
+    "cards": {"type": "integer", "minimum": 1},
+    "scenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["index", "start_s", "end_s", "duration_s", "text", "asset_refs", "asset_status"],
+        "properties": {
+          "index": {"type": "integer", "minimum": 1},
+          "start_s": {"type": "number", "minimum": 0},
+          "end_s": {"type": "number", "minimum": 0},
+          "duration_s": {"type": "number", "minimum": 0},
+          "text": {"type": "string"},
+          "asset_refs": {"type": "array", "items": {"type": "string"}},
+          "asset_status": {"enum": ["UNBOUND_ASSET", "BOUND_ASSET"]}
+        },
+        "additionalProperties": true
+      }
+    },
+    "audio": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {
+        "status": {"enum": ["NOT_BOUND", "SILENT"]},
+        "voice": {"type": "string"},
+        "music": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "generation": {
+      "type": "object",
+      "required": ["engine", "ai_generated", "gpu_used", "external_service_used", "model_weights"],
+      "properties": {
+        "engine": {"enum": ["none", "ffmpeg_drawtext"]},
+        "ai_generated": {"const": false},
+        "gpu_used": {"const": false},
+        "external_service_used": {"const": false},
+        "model_weights": {"const": "none"}
+      },
+      "additionalProperties": true
+    },
+    "guardrails": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}
