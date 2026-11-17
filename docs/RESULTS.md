@@ -1,16 +1,29 @@
 # Results
 
-## V0.5 engineering verification
+## V0.6 engineering verification
 
-- 35 automated tests passing.
-- Synthetic V0.5 end-to-end workflow verified, including parallel dashboard requests.
-- V0.3/V0.4 compatibility workflow still verified against schema 0.5.
-- Attention Lab contracts persist and reload.
-- Layered A/B returns `automatic_winner: null`.
-- Human evaluations persist; anonymous and AI-assisted inputs are excluded from the human gate.
+- 47 automated tests passing (35 V0.5 preserved plus 12 new V0.6 creative-loop tests).
+- Synthetic V0.6 end-to-end workflow verified, including creative review, exports, imports, human evaluation, performance records and version comparison, plus the dashboard HTTP workflow.
+- V0.3/V0.4/V0.5 compatibility workflow still verified.
+- V0.6 contracts validate against their published schemas.
+- Layered comparison keeps `automatic_winner: null`.
+- Human evaluations persist; anonymous, AI-assisted and demo inputs are excluded from the training gate.
 - Training remains blocked and creates no model.
-- Production manifest and CPU animatic render, activate and roll back.
-- Public contract schemas validate against exported local contracts.
+- Production handoff exports stay proposal-only.
+
+## V0.6 creative feedback loop demo — EP011 vs EP021
+
+The V0.6 loop was executed on authorized local copies of EP011 and EP021.
+
+- EP021 defect (high priority): no deliberate visual change before 3 s in the hook.
+- EP021 proposal: add a deliberate visual change before 2 s (cinematic close-up / reveal / motivated transition), keeping the rest stable.
+- Estimated impact: `ESTIMATE_ONLY` on `retention_3s`; not a measurement and not a commercial result.
+- Acceptance: human review of legibility and clarity on mobile.
+- Versions compared: EP011 vs EP021 with explicit version keys and SHA-256 integrity checks.
+- Human evaluation: recorded during the local demo as `demo`, excluded from the training gate.
+- Performance: missing metrics remained missing; no commercial improvement was claimed.
+
+The public-safe summary is [`V06_PILOT.md`](V06_PILOT.md).
 
 ## V0.5 pilot — EP011 vs EP021
 

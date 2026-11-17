@@ -1,0 +1,78 @@
+{
+  "type": "object",
+  "required": [
+    "contract_version",
+    "approval_key",
+    "subject_type",
+    "subject_key",
+    "decision",
+    "evaluator_id",
+    "provenance",
+    "notes",
+    "conditions",
+    "created_at",
+    "gate_eligible",
+    "no_automatic_promotion",
+    "scope"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "human-approval.v0.1"
+    },
+    "approval_key": {
+      "type": "string"
+    },
+    "subject_type": {
+      "enum": [
+        "creative_review",
+        "recommended_change",
+        "production_brief",
+        "episode_version",
+        "performance_comparison"
+      ]
+    },
+    "subject_key": {
+      "type": "string"
+    },
+    "decision": {
+      "enum": [
+        "APPROVED",
+        "REJECTED",
+        "CHANGES_REQUESTED",
+        "PENDING"
+      ]
+    },
+    "evaluator_id": {
+      "type": "string"
+    },
+    "provenance": {
+      "enum": [
+        "human",
+        "ai_assisted",
+        "demo",
+        "synthetic"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "conditions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "gate_eligible": {
+      "type": "boolean"
+    },
+    "no_automatic_promotion": {
+      "const": true
+    },
+    "scope": {
+      "type": "string"
+    }
+  }
+}

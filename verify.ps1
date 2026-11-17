@@ -7,4 +7,6 @@ if ($LASTEXITCODE -ne 0) { throw "Unit tests failed with exit code $LASTEXITCODE
 if ($LASTEXITCODE -ne 0) { throw "V0.3 compatibility E2E failed with exit code $LASTEXITCODE" }
 & python scripts\verify_v05.py
 if ($LASTEXITCODE -ne 0) { throw "V0.5 E2E verification failed with exit code $LASTEXITCODE" }
-Write-Host "V0.5 verification completed." -ForegroundColor Green
+& python scripts\verify_v06.py
+if ($LASTEXITCODE -ne 0) { throw "V0.6 E2E verification failed with exit code $LASTEXITCODE" }
+Write-Host "V0.5 and V0.6 verification completed." -ForegroundColor Green

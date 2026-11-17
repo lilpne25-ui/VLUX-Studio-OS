@@ -1,88 +1,39 @@
 # Architecture
 
-VLUX Studio OS V0.5 is a local-first Python application. The public repository contains the application, versioned contracts and public-safe documentation; runtime databases, media, reports and artifacts remain local and git-ignored.
+## Current state
 
-## System flow
-
-```text
-authorized local copy
-        ↓
-FFprobe / OpenCV
-        ↓
-SQLite evidence store (schema 0.5)
-  ├── videos + analyses + observations
-  ├── publications + platform metrics + commercial records
-  ├── attention_analyses
-  ├── video_evaluations + feedback
-  ├── ab_comparisons
-  ├── dataset_registry
-  ├── production_versions + production_jobs
-  └── experiments + models
-        ↓
-Attention Lab / layered A/B / Creative Director
-        ↓
-JSON contracts → dashboard, CLI, future Video OS adapter
-```
-
-## Evidence layers
-
-V0.5 keeps four layers separate by construction:
-
-| Layer | Source | May it decide a winner? |
-| --- | --- | --- |
-| Observed facts | FFprobe/OpenCV on the file | No |
-| Heuristic estimates | Deterministic Attention Lab policy | No |
-| Human preference | Identified 1–5 evaluations and pairwise choices | Only as stated human evidence |
-| Commercial results | Provenance-dated platform and business records | Only when comparable |
-
-`ab.py` returns `automatic_winner: null` unless legitimate human and commercial evidence support a decision. Likes, saves and views are never converted into leads or revenue.
-
-## Boundaries
-
-- `vlux_ci/db.py` — schema 0.5, migrations, hashing and persistence helpers.
-- `vlux_ci/probe.py` — FFprobe metadata.
-- `vlux_ci/analyzer.py` — CPU-first visual/audio facts and timestamped observations.
-- `vlux_ci/attention.py` — Attention Lab contract, evidence, estimates, results layer, recommendations and `first_change`.
-- `vlux_ci/ab.py` — layered A/B comparison and human evaluation persistence.
-- `vlux_ci/learning.py` — Dataset Registry, Training Gate, experiments, Model Registry, promotion guard and rollback.
-- `vlux_ci/production.py` — local `manifest` and CPU `ffmpeg_animatic` adapters, version registry, activation and rollback.
-- `vlux_ci/funnel.py` — observed/derived/unavailable funnel indicators.
-- `vlux_ci/creative.py` — deterministic Creative Director proposal engine.
-- `vlux_ci/proposals.py` — EP025 proposal catalog.
-- `vlux_ci/ml.py` — rules baseline and gated lightweight candidate path.
-- `vlux_ci/dashboard.py` — local HTTP workflow with per-request SQLite connections.
-- `vlux_ci/cli.py` — automation and reproducible commands.
-
-## Training boundary
+VLUX Studio OS V0.6 implements the **Creative Feedback Loop** on top of the V0.5 Attention Lab.
 
 ```text
-Dataset Registry
-  → eligibility check (permission, provenance, deduplication)
-  → Training Gate (videos, episodes, human labels, commercial records, classes)
-  → experiment with episode-level holdout
-  → Evaluation Pipeline
-  → Model Registry candidate
-  → named-human promotion
-  → activation or rollback
+authorized media
+   -> Creative Review (V0.6)
+   -> Visual Defects (V0.6)
+   -> Recommended Changes (V0.6)
+   -> Production Brief (V0.6) + Production Handoff
+   -> Episode Version Import (V0.6, explicit path + hash + permission)
+   -> Version Comparison (V0.6)
+   -> Human Evaluation (V0.6)
+   -> Performance Records (V0.6)
+   -> Learning Governance (V0.5, unchanged)
 ```
 
-The default and current state is:
+Layer separation is preserved:
 
-```text
-NO_TRAINING_INSUFFICIENT_DATA
-```
+1. Observed audiovisual facts (FFprobe/OpenCV).
+2. Heuristic estimates and estimated impact (`ESTIMATE_ONLY`).
+3. Human evaluations, preferences and approvals (named human evaluators only).
+4. Commercial metrics tied to the exact episode version (missing stays missing, zero stays zero).
 
-Anonymous evaluations, AI-assisted evaluations and videos with permissions outside `authorized`, `owned`, `synthetic` or `public_domain` are excluded. Pilot copies use `authorized_analysis_only` and therefore cannot train anything.
+The learning branch remains separate: Dataset Registry -> Training Gate -> Experiment -> Evaluation -> Model Registry -> Manual promotion, and it stays blocked with `NO_TRAINING_INSUFFICIENT_DATA`.
 
-## Production boundary
+## V0.6 modules
 
-The V0.5 adapters are intentionally modest:
+- `vlux_ci/creative_loop.py`: loop orchestration, contracts, exports, imports, comparisons, performance records, evaluations, approvals, status.
+- Contracts: `creative-review.v0.1`, `visual-defects.v0.1`, `recommended-changes.v0.1`, `production-brief.v0.1`, `episode-version.v0.1`, `human-approval.v0.1`, `human-evaluation.v0.1`, `performance-record.v0.1`, `performance-comparison.v0.1`.
+- SQLite schema: additive V0.6 tables under schema `0.6`; V0.5 tables remain valid.
+- CLI: `creative-review`, `creative-defects`, `creative-changes`, `review-export`, `brief-create`, `brief-export`, `version-import`, `version-import-contract`, `version-approve`, `version-evaluate`, `performance-record`, `version-compare`, `version-integrity`, `versions-list`, `loop-status`.
+- Dashboard: `/api/loop/status`, `/api/loop/review`, `/api/loop/review-export`, `/api/loop/brief`, `/api/loop/brief-export`, `/api/loop/version-import`, `/api/loop/version-evaluate`, `/api/loop/approval`, `/api/loop/performance`, `/api/loop/compare`, plus the V0.6 loop view.
 
-- `manifest` writes a scene-level JSON production contract with unbound assets;
-- `ffmpeg_animatic` renders text cards locally with FFmpeg, without voice, music, 3D assets or AI generation.
+## Non-regression
 
-Both record `gpu_used: false`, `model_weights: none` and `external_service_used: false`. A version must be rendered before activation. Rollback re-activates a previously rendered version without rewriting history.
-
-## Non-goals
-
-There is no cloud service, platform credential, Blender invocation, render queue, GPU dependency, model-weight bundle, or write integration with VLUX Video OS. Recommendations are proposals; human approval remains mandatory.
+V0.5 Attention Lab, V0.5 A/B, V0.5 learning gate and V0.5 production adapters keep their V0.1/V0.2/V0.5 behavior. V0.6 only adds.

@@ -164,7 +164,7 @@ def main():
                 time.sleep(0.2)
         else:
             raise RuntimeError("dashboard_did_not_start")
-        assert summary["schema_version"] == "0.5"
+        assert summary["schema_version"] in ("0.5", "0.6")
         assert summary["training_state"] == "NO_TRAINING_INSUFFICIENT_DATA"
         assert summary["attention_analyses"] >= 2
         assert summary["human_evaluations"] >= 1

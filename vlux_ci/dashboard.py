@@ -14,6 +14,11 @@ from .ab import list_evaluations, record_evaluation
 from .analyzer import analyze
 from .attention import ANALYZER_VERSION, analyze_attention, attention_summary, latest_attention
 from .creative import recommend
+from .creative_loop import (
+    compare_episode_versions, create_production_brief, create_review, export_production_brief,
+    export_review_bundle, get_episode_version, import_episode_version, list_version_evaluations,
+    loop_status, record_human_approval, record_performance, record_version_evaluation, verify_version_integrity,
+)
 from .db import connect, json_dumps, sha256_file
 from .funnel import funnel
 from .learning import dataset_registry, gate_report, list_experiments, list_models, training_status
@@ -132,17 +137,17 @@ footer{margin-top:30px;color:#6f8094;font-size:11.5px;border-top:1px solid var(-
 <body>
 <div class="wrap">
 <header>
-  <div class="brand"><div class="mark">V</div><div><h1>VLUX STUDIO OS</h1><p class="sub">VLUX ATTENTION LAB · V0.5 · INDEPENDENT CREATIVE ENGINE</p></div></div>
+  <div class="brand"><div class="mark">V</div><div><h1>VLUX STUDIO OS</h1><p class="sub">VLUX ATTENTION LAB · V0.6 · CREATIVE FEEDBACK LOOP · INDEPENDENT CREATIVE ENGINE</p></div></div>
   <div class="chips">
     <span class="chip info">LOCAL</span><span class="chip info">CPU</span>
-    <span class="chip" id="schemaChip">SCHEMA 0.5</span>
+    <span class="chip" id="schemaChip">SCHEMA 0.6</span>
     <span class="chip warn" id="trainChip">NO_TRAINING_INSUFFICIENT_DATA</span>
   </div>
 </header>
 
 <div class="hero">
   <div class="card hero-main">
-    <p class="eyebrow">V0.5 · ATTENTION LAB V0.1</p>
+    <p class="eyebrow">V0.6 · CREATIVE FEEDBACK LOOP</p>
     <h2>De señales observables a decisiones creativas defendibles.</h2>
     <p class="lead">Hechos audiovisuales, estimaciones heurísticas, preferencias humanas y resultados comerciales permanecen en capas separadas. Sin predicciones de viralidad, sin datos inventados.</p>
     <div class="layers">
@@ -162,6 +167,7 @@ footer{margin-top:30px;color:#6f8094;font-size:11.5px;border-top:1px solid var(-
   <button data-view="learning">Aprendizaje</button>
   <button data-view="commercial">Resultados</button>
   <button data-view="production">Producción</button>
+  <button data-view="loop">Loop de retroalimentación</button>
 </nav>
 
 <main>
@@ -193,6 +199,35 @@ footer{margin-top:30px;color:#6f8094;font-size:11.5px;border-top:1px solid var(-
     <div class="col-6 card">
       <h3>Estado de aprendizaje</h3>
       <div id="learningMini" class="muted">Cargando…</div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="view-loop">
+  <div class="grid">
+    <div class="col-12 card">
+      <div class="row" style="justify-content:space-between"><h3 style="margin:0">Creative Feedback Loop · V0.6</h3><button class="btn ghost" onclick="refreshLoop()">Actualizar</button></div>
+      <div id="loopPanel" class="muted" style="margin-top:10px">Cargando…</div>
+      <pre id="loopResult" style="max-height:160px">Sin resultados todavía.</pre>
+      <div class="row" style="margin-top:10px">
+        <input id="loopVersionEpisode" placeholder="EP-TEST" style="flex:1">
+        <input id="loopVersionPath" placeholder="data/review/pilot/EP021-pilot.mp4" style="flex:2">
+        <select id="loopVersionPermission"><option value="authorized_analysis_only">authorized_analysis_only</option><option value="authorized">authorized</option><option value="owned">owned</option><option value="synthetic">synthetic</option><option value="public_domain">public_domain</option></select>
+        <button class="btn" onclick="runLoopImport()">Importar versión</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <label>A</label>
+        <select id="loopVersionA"></select>
+        <label>B</label>
+        <select id="loopVersionB"></select>
+        <button class="btn" onclick="runLoopCompare()">Comparar versiones</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <input id="loopExportDir" value="reports/v06" style="flex:2">
+        <button class="btn" onclick="runLoopExportReview()">Exportar review</button>
+        <button class="btn" onclick="runLoopBrief()">Crear brief</button>
+        <button class="btn" onclick="runLoopExportBrief()">Exportar handoff</button>
+      </div>
     </div>
   </div>
 </section>
@@ -311,7 +346,7 @@ footer{margin-top:30px;color:#6f8094;font-size:11.5px;border-top:1px solid var(-
 
 <script>
 const $=id=>document.getElementById(id);
-const state={videos:[],summary:{},learning:{},publications:[],ab:null,attention:null,recent:{}};
+const state={videos:[],summary:{},learning:{},publications:[],ab:null,attention:null,recent:{},loop:{}};
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function api(url,opt){const r=await fetch(url,opt);let x;try{x=await r.json()}catch(e){throw Error('Respuesta no JSON')}if(!r.ok)throw Error(x.error||JSON.stringify(x));return x}
 function pct(v){return v==null?'—':Math.round(v*100)+'%'}
@@ -321,7 +356,7 @@ function bandPill(v){if(v==null)return pill('NO ASSESSABLE','warn');return pill(
 function bar(v,cls=''){return `<div class="bar ${cls}"><i style="width:${Math.max(0,Math.min(100,v||0))}%"></i></div>`}
 function scoreCard(label,value,band,extra=''){return `<div class="card col-4" style="padding:14px"><div class="tiny muted">${esc(label)}</div><div class="score"><span class="num">${score(value)}</span><span class="den">/100 estimado</span></div>${bar(value||0)}<div style="margin-top:8px">${bandPill(band)} ${extra}</div></div>`}
 
-const VIEWS=['overview','hook','ab','learning','commercial','production'];
+const VIEWS=['overview','hook','ab','learning','commercial','production','loop'];
 function currentView(){const h=location.hash.replace('#','');return VIEWS.includes(h)?h:'overview'}
 function showView(name){
   if(!VIEWS.includes(name))name='overview';
@@ -344,8 +379,8 @@ function bootView(){
 
 async function refreshAll(){
   try{
-    const [s,v,l,p,pr,rec]=await Promise.all([api('/api/summary'),api('/api/videos'),api('/api/learning'),api('/api/publications'),api('/api/production'),api('/api/recommendations')]);
-    state.summary=s;state.videos=v.videos;state.learning=l;state.publications=p.publications||[];state.recent=rec||{};
+    const [s,v,l,p,pr,rec,loop]=await Promise.all([api('/api/summary'),api('/api/videos'),api('/api/learning'),api('/api/publications'),api('/api/production'),api('/api/recommendations'),api('/api/loop/status')]);
+    state.summary=s;state.videos=v.videos;state.learning=l;state.publications=p.publications||[];state.recent=rec||{};state.loop=loop||{};
     $('schemaChip').textContent='SCHEMA '+s.schema_version;
     $('trainChip').textContent=s.training_state;
     $('trainChip').className='chip '+(s.training_state==='NO_TRAINING_INSUFFICIENT_DATA'?'warn':'ok');
@@ -372,7 +407,23 @@ function renderRecentRecommendations(){
     `<div class="tiny muted" style="margin-top:9px">Primer cambio sugerido: <b>${esc(state.recent.first_change?.action||'—')}</b></div>`;
 }
 
-function renderVideos(){
+async function refreshLoop(){try{const x=await api('/api/loop/status');state.loop=x;renderLoop()}catch(e){$('loopPanel').textContent='Error: '+e.message}}
+function renderLoop(){
+  const st=state.loop||{};
+  const el=$('loopPanel');if(!el)return;
+  el.innerHTML=`<div class="grid"><div class="col-6 card" style="padding:12px"><h3>Creative Feedback Loop</h3><div class="kv"><span>Estado loop</span><span class="pill">${esc(st.loop_version||'0.6')}</span></div><div class="kv"><span>Creative reviews</span><span>${esc((st.counts||{}).creative_reviews??0)}</span></div><div class="kv"><span>Recomendaciones</span><span>${esc((st.counts||{}).recommended_changes??0)}</span></div><div class="kv"><span>Briefs</span><span>${esc((st.counts||{}).production_briefs??0)}</span></div><div class="kv"><span>Versiones</span><span>${esc((st.counts||{}).episode_versions??0)}</span></div><div class="kv"><span>Comparaciones</span><span>${esc((st.counts||{}).version_comparisons??0)}</span></div><div class="kv"><span>Evaluaciones V0.6</span><span>${esc((st.counts||{}).version_evaluations??0)}</span></div></div><div class="col-6 card" style="padding:12px"><h3>Capas separadas</h3><ul class="list"><li>Hechos observados.</li><li>Estimaciones heurísticas.</li><li>Preferencia humana.</li><li>Métricas comerciales por versión exacta.</li></ul><div class="hr"></div><h3>Guardrails</h3><ul class="list">${(st.guardrails||[]).map(g=>`<li>${esc(g)}</li>`).join('')}</ul><div class="hr"></div><div class="kv"><span>Entrenamiento</span><span class="pill bad">${esc(st.training_state||'NO_TRAINING_INSUFFICIENT_DATA')}</span></div></div></div>`;
+}
+async function runLoopReview(){
+  const id=+$('hookVideo').value;if(!id)return;
+  $('loopResult').textContent='Creando creative review…';
+  try{const x=await api('/api/loop/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({video_id:id})});$('loopResult').textContent=JSON.stringify(x,null,2);await refreshAll();await refreshLoop()}catch(e){$('loopResult').textContent='Error: '+e.message}
+}
+async function runLoopExportReview(){const r=JSON.parse($('loopResult').textContent);if(!r?.result?.review?.review_key)return;$('loopResult').textContent=JSON.stringify(await api('/api/loop/review-export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({review_key:r.result.review.review_key,output_dir:$('loopExportDir').value||'reports/v06'})}),null,2)}
+async function runLoopBrief(){const r=JSON.parse($('loopResult').textContent);if(!r?.result?.changes?.[0]?.change_key)return;$('loopResult').textContent=JSON.stringify(await api('/api/loop/brief',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({change_key:r.result.changes[0].change_key,target_version_label:'EP-REV-01'})}),null,2)}
+async function runLoopExportBrief(){const r=JSON.parse($('loopResult').textContent);if(!r?.result?.brief_key)return;$('loopResult').textContent=JSON.stringify(await api('/api/loop/brief-export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({brief_key:r.result.brief_key,output_dir:$('loopExportDir').value||'reports/v06'})}),null,2)}
+async function runLoopImport(){const body={episode:$('loopVersionEpisode').value||'EP-TEST',file_path:$('loopVersionPath').value,permission_status:$('loopVersionPermission').value||'synthetic'};if($('loopVersionParent').value)body.parent_version_key=$('loopVersionParent').value;if($('loopVersionBrief').value)body.brief_key=$('loopVersionBrief').value;$('loopResult').textContent=JSON.stringify(await api('/api/loop/version-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),null,2;await refreshAll();await refreshLoop()}
+async function runLoopCompare(){const body={a:+$('loopVersionA').value,b:+$('loopVersionB').value};if(!body.a||!body.b)return;$('loopResult').textContent=JSON.stringify(await api('/api/loop/compare',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}),null,2;await refreshAll();await refreshLoop()}
+
   const q=($('search').value||'').toLowerCase();
   const rows=state.videos.filter(v=>!q||(v.episode+' '+v.source_kind+' '+v.permission_status).toLowerCase().includes(q));
   if(!rows.length){$('videos').innerHTML='<p class="muted">Sin videos. Importa una copia autorizada en Producción.</p>';return}
@@ -603,6 +654,11 @@ def serve(db, host, port):
                     "commercial_records": gate["counts"]["commercial_records"],
                     "creative_proposals": con.execute("select count(*) from creative_proposals").fetchone()[0],
                     "production_versions": con.execute("select count(*) from production_versions").fetchone()[0],
+                    "creative_reviews": con.execute("select count(*) from creative_reviews").fetchone()[0],
+                    "episode_versions": con.execute("select count(*) from episode_versions").fetchone()[0],
+                    "performance_records": con.execute("select count(*) from performance_records").fetchone()[0],
+                    "version_comparisons": con.execute("select count(*) from version_comparisons").fetchone()[0],
+                    "loop": loop_status(con),
                     "models": con.execute("select count(*) from models").fetchone()[0],
                     "training_state": gate["training_state"],
                     "gate_status": gate["status"],
@@ -669,6 +725,64 @@ def serve(db, host, port):
                     })
             elif parsed.path == "/api/production":
                 self.send_json({"versions": list_versions(con), "summary": production_summary(con)})
+            elif parsed.path == "/api/loop/status":
+                self.send_json(loop_status(con))
+            elif parsed.path == "/api/loop/review":
+                result = create_review(con, int(query.get("video_id", ["0"])[0]))
+                self.send_json({"status": "REVIEW_CREATED", "result": result})
+            elif parsed.path == "/api/loop/reviews":
+                result = list_version_evaluations(con)
+                self.send_json({"evaluations": result})
+            elif parsed.path == "/api/loop/export-review":
+                data = self.body_json()
+                self.send_json(export_review_bundle(con, data["review_key"], data["output_dir"]))
+            elif parsed.path == "/api/loop/brief":
+                data = self.body_json()
+                self.send_json(create_production_brief(con, data["change_key"], data.get("target_version_label")))
+            elif parsed.path == "/api/loop/brief-export":
+                data = self.body_json()
+                self.send_json(export_production_brief(con, data["brief_key"], data["output_dir"]))
+            elif parsed.path == "/api/loop/version-import":
+                data = self.body_json()
+                result = import_episode_version(
+                    con, data["episode"], data["file_path"], data["permission_status"],
+                    parent_version_key=data.get("parent_version_key"),
+                    brief_key=data.get("brief_key"),
+                    source_video_id=data.get("source_video_id"),
+                    version_label=data.get("version_label"),
+                    allowed_roots=data.get("allowed_roots") or [Path("data")],
+                )
+                self.send_json({"status": "VERSION_IMPORTED", "result": result})
+            elif parsed.path == "/api/loop/version-evaluate":
+                data = self.body_json()
+                result = record_version_evaluation(
+                    con, data["version_key"], data.get("evaluator_id", "anonymous"),
+                    visual_impact=data.get("visual_impact"), realism=data.get("realism"),
+                    clarity=data.get("clarity"), hook=data.get("hook"), narrative=data.get("narrative"),
+                    business_value=data.get("business_value"), cta=data.get("cta"),
+                    preference=data.get("preference"), compared_version_key=data.get("compared_version_key"),
+                    confidence=data.get("confidence"), notes=data.get("notes", ""),
+                    provenance=data.get("provenance", "human"), evaluated_at=data.get("evaluated_at"),
+                )
+                self.send_json({"status": "EVALUATION_RECORDED", "result": result})
+            elif parsed.path == "/api/loop/approval":
+                data = self.body_json()
+                self.send_json(record_human_approval(
+                    con, data["subject_type"], data["subject_key"], data["decision"],
+                    data.get("evaluator_id", "anonymous"), data.get("notes", ""),
+                ))
+            elif parsed.path == "/api/loop/performance":
+                data = self.body_json()
+                result = record_performance(
+                    con, data["version_key"], data["platform"], data.get("measured_at"), data["metrics"],
+                    campaign=data.get("campaign"), published_at=data.get("published_at"),
+                    hook_used=data.get("hook_used"), cta_used=data.get("cta_used"),
+                    provenance=data.get("provenance", "USER_PROVIDED"), notes=data.get("notes", ""),
+                )
+                self.send_json({"status": "PERFORMANCE_RECORDED", "result": result})
+            elif parsed.path == "/api/loop/compare":
+                data = self.body_json()
+                self.send_json(compare_episode_versions(con, data["a"], data["b"], data.get("platform")))
             else:
                 body = _page().encode()
                 self.send_response(200)
@@ -794,9 +908,61 @@ def serve(db, host, port):
                 elif parsed.path == "/api/production/activate":
                     data = self.body_json()
                     self.send_json(activate_version(con, data["version_key"]))
-                elif parsed.path == "/api/production/rollback":
+                elif parsed.path == "/api/loop/status":
+                    self.send_json(loop_status(con))
+                elif parsed.path == "/api/loop/review":
+                    result = create_review(con, int(self.body_json()["video_id"]))
+                    self.send_json({"status": "REVIEW_CREATED", "result": result})
+                elif parsed.path == "/api/loop/review-export":
                     data = self.body_json()
-                    self.send_json(rollback_version(con, data["version_key"]))
+                    self.send_json(export_review_bundle(con, data["review_key"], data["output_dir"]))
+                elif parsed.path == "/api/loop/brief":
+                    data = self.body_json()
+                    self.send_json(create_production_brief(con, data["change_key"], data.get("target_version_label")))
+                elif parsed.path == "/api/loop/brief-export":
+                    data = self.body_json()
+                    self.send_json(export_production_brief(con, data["brief_key"], data["output_dir"]))
+                elif parsed.path == "/api/loop/version-import":
+                    data = self.body_json()
+                    result = import_episode_version(
+                        con, data["episode"], data["file_path"], data["permission_status"],
+                        parent_version_key=data.get("parent_version_key"),
+                        brief_key=data.get("brief_key"),
+                        source_video_id=data.get("source_video_id"),
+                        version_label=data.get("version_label"),
+                        allowed_roots=data.get("allowed_roots") or [Path("data")],
+                    )
+                    self.send_json({"status": "VERSION_IMPORTED", "result": result})
+                elif parsed.path == "/api/loop/version-evaluate":
+                    data = self.body_json()
+                    result = record_version_evaluation(
+                        con, data["version_key"], data.get("evaluator_id", "anonymous"),
+                        visual_impact=data.get("visual_impact"), realism=data.get("realism"),
+                        clarity=data.get("clarity"), hook=data.get("hook"), narrative=data.get("narrative"),
+                        business_value=data.get("business_value"), cta=data.get("cta"),
+                        preference=data.get("preference"), compared_version_key=data.get("compared_version_key"),
+                        confidence=data.get("confidence"), notes=data.get("notes", ""),
+                        provenance=data.get("provenance", "human"), evaluated_at=data.get("evaluated_at"),
+                    )
+                    self.send_json({"status": "EVALUATION_RECORDED", "result": result})
+                elif parsed.path == "/api/loop/approval":
+                    data = self.body_json()
+                    self.send_json(record_human_approval(
+                        con, data["subject_type"], data["subject_key"], data["decision"],
+                        data.get("evaluator_id", "anonymous"), data.get("notes", ""),
+                    ))
+                elif parsed.path == "/api/loop/performance":
+                    data = self.body_json()
+                    result = record_performance(
+                        con, data["version_key"], data["platform"], data.get("measured_at"), data["metrics"],
+                        campaign=data.get("campaign"), published_at=data.get("published_at"),
+                        hook_used=data.get("hook_used"), cta_used=data.get("cta_used"),
+                        provenance=data.get("provenance", "USER_PROVIDED"), notes=data.get("notes", ""),
+                    )
+                    self.send_json({"status": "PERFORMANCE_RECORDED", "result": result})
+                elif parsed.path == "/api/loop/compare":
+                    data = self.body_json()
+                    self.send_json(compare_episode_versions(con, data["a"], data["b"], data.get("platform")))
                 else:
                     self.send_json({"error": "not_found"}, 404)
             except (KeyError, ValueError, OSError, json.JSONDecodeError) as exc:

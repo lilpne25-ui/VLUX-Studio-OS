@@ -1,0 +1,156 @@
+{
+  "type": "object",
+  "required": [
+    "contract_version",
+    "evaluation_key",
+    "version_key",
+    "episode",
+    "evaluator_id",
+    "provenance",
+    "scores",
+    "scale",
+    "preference",
+    "confidence",
+    "notes",
+    "evaluated_at",
+    "gate_eligible",
+    "counts_for_training_gate",
+    "note"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "human-evaluation.v0.1"
+    },
+    "evaluation_key": {
+      "type": "string"
+    },
+    "version_key": {
+      "type": "string"
+    },
+    "episode": {
+      "type": "string"
+    },
+    "evaluator_id": {
+      "type": "string"
+    },
+    "provenance": {
+      "enum": [
+        "human",
+        "ai_assisted",
+        "demo",
+        "synthetic"
+      ]
+    },
+    "scores": {
+      "type": "object",
+      "required": [
+        "visual_impact",
+        "realism",
+        "clarity",
+        "hook",
+        "narrative",
+        "business_value",
+        "cta"
+      ],
+      "properties": {
+        "visual_impact": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "realism": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "clarity": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "hook": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "narrative": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "business_value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "cta": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "scale": {
+      "const": "1-5"
+    },
+    "preference": {
+      "type": "object",
+      "required": [
+        "choice",
+        "compared_version_key",
+        "basis"
+      ],
+      "properties": {
+        "choice": {
+          "enum": [
+            "A",
+            "B",
+            "tie",
+            "no_preference",
+            null
+          ]
+        },
+        "compared_version_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "basis": {
+          "enum": [
+            "A/B",
+            "single_version"
+          ]
+        }
+      }
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    },
+    "evaluated_at": {
+      "type": "string"
+    },
+    "gate_eligible": {
+      "type": "boolean"
+    },
+    "counts_for_training_gate": {
+      "const": false
+    },
+    "note": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "type": "object",
+  "required": [
+    "contract_version",
+    "record_key",
+    "version_key",
+    "episode",
+    "platform",
+    "campaign",
+    "published_at",
+    "measured_at",
+    "hook_used",
+    "cta_used",
+    "metrics",
+    "status",
+    "provenance",
+    "notes",
+    "created_at",
+    "version_match",
+    "likes_are_not_leads",
+    "guardrails"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "performance-record.v0.1"
+    },
+    "record_key": {
+      "type": "string"
+    },
+    "version_key": {
+      "type": "string"
+    },
+    "episode": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string"
+    },
+    "campaign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "published_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "measured_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hook_used": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cta_used": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "value",
+          "status",
+          "provenance",
+          "measured_at",
+          "definition",
+          "verification",
+          "is_zero",
+          "is_missing"
+        ],
+        "properties": {
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "OBSERVED",
+              "USER_REPORTED",
+              "ESTIMATED",
+              "NOT_AVAILABLE"
+            ]
+          },
+          "provenance": {
+            "type": "string"
+          },
+          "measured_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "definition": {
+            "type": "string"
+          },
+          "verification": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currency": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "is_zero": {
+            "type": "boolean"
+          },
+          "is_missing": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "OBSERVED_VERSION_EXACT",
+        "PARTIAL",
+        "ALL_MISSING"
+      ]
+    },
+    "provenance": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "version_match": {
+      "const": "EXACT_VERSION_KEY"
+    },
+    "likes_are_not_leads": {
+      "const": true
+    },
+    "guardrails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

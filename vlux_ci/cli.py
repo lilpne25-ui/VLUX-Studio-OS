@@ -19,6 +19,17 @@ from .production import (
     activate_version, history as production_history, list_versions, plan_version,
     render_version, rollback_version, summary as production_summary,
 )
+from .creative_loop import (
+    CONTRACT_CREATIVE_REVIEW, CONTRACT_EPISODE_VERSION, CONTRACT_HUMAN_APPROVAL,
+    CONTRACT_HUMAN_EVALUATION, CONTRACT_PERFORMANCE_COMPARISON, CONTRACT_PERFORMANCE_RECORD,
+    CONTRACT_PRODUCTION_BRIEF, CONTRACT_RECOMMENDED_CHANGES, CONTRACT_VISUAL_DEFECTS,
+    activate_episode_version, compare_episode_versions, create_production_brief,
+    create_review, export_production_brief, export_review_bundle, get_episode_version,
+    import_episode_version, import_version_contract, list_version_evaluations,
+    loop_status, record_human_approval, record_performance, record_version_evaluation,
+    recommended_changes_contract, rollback_episode_version, verify_version_integrity,
+    visual_defects_contract,
+)
 
 def dbpath(args): return args.db or str(Path("data")/"vlux.sqlite")
 def cmd_import(a):
@@ -213,10 +224,58 @@ def cmd_production_versions(a):
     con=connect(dbpath(a)); result={"versions":list_versions(con,a.video_id),"summary":production_summary(con)}
     if a.version_key: result["history"]=production_history(con,a.version_key)
     return _print(result,a.output)
+def cmd_creative_review(a):
+    con=connect(dbpath(a)); result=create_review(con,a.video_id); return _print(result,a.output)
+def cmd_creative_reviews(a):
+    con=connect(dbpath(a)); result=[dict(r) for r in con.execute("select review_key,video_id,episode,version_label,contract_version,status,created_at from creative_reviews order by id desc")]; return _print(result,a.output)
+def cmd_creative_defects(a):
+    con=connect(dbpath(a)); result=visual_defects_contract(create_review(con,a.video_id)); return _print(result,a.output)
+def cmd_creative_changes(a):
+    con=connect(dbpath(a)); result=recommended_changes_contract(create_review(con,a.video_id)); return _print(result,a.output)
+def cmd_review_export(a):
+    con=connect(dbpath(a)); result=export_review_bundle(con,a.review_key,a.output_dir); return _print(result,a.output)
+def cmd_brief_create(a):
+    con=connect(dbpath(a)); result=create_production_brief(con,a.change_key,a.target_version_label); return _print(result,a.output)
+def cmd_brief_export(a):
+    con=connect(dbpath(a)); result=export_production_brief(con,a.brief_key,a.output_dir); return _print(result,a.output)
+def cmd_version_import(a):
+    con=connect(dbpath(a)); result=import_episode_version(con,a.episode,a.file,a.permission,allowed_roots=[Path(p) for p in (a.allowed_root or [])]); return _print(result,a.output)
+def cmd_version_import_contract(a):
+    con=connect(dbpath(a)); result=import_version_contract(con,a.file); return _print(result,a.output)
+def cmd_version_approve(a):
+    con=connect(dbpath(a)); result=record_human_approval(con,a.subject_type,a.subject_key,a.decision,a.evaluator,a.notes); return _print(result,a.output)
+def cmd_version_evaluate(a):
+    con=connect(dbpath(a)); result=record_version_evaluation(con,a.version_key,a.evaluator,a.visual_impact,a.realism,a.clarity,a.hook,a.narrative,a.business_value,a.cta,a.preference,a.compared_version_key,a.confidence,a.notes,a.provenance,a.evaluated_at); return _print(result,a.output)
+def cmd_performance_record(a):
+    con=connect(dbpath(a)); result=record_performance(con,a.version_key,a.platform,a.measured_at,json.loads(a.metrics),campaign=a.campaign,published_at=a.published_at,hook_used=a.hook_used,cta_used=a.cta_used,provenance=a.provenance,notes=a.notes); return _print(result,a.output)
+def cmd_version_compare(a):
+    con=connect(dbpath(a)); result=compare_episode_versions(con,a.a,a.b,platform=a.platform); return _print(result,a.output)
+def cmd_version_integrity(a):
+    con=connect(dbpath(a)); result=verify_version_integrity(con,a.version_key); return _print(result,a.output)
+def cmd_versions_list(a):
+    con=connect(dbpath(a)); result={"versions":list_episode_versions(con,a.episode)}; return _print(result,a.output)
+def cmd_loop_status(a):
+    con=connect(dbpath(a)); result=loop_status(con); return _print(result,a.output)
 
 
 def parser():
     p=argparse.ArgumentParser(prog="vlux-ci"); p.add_argument("--db",default=None); s=p.add_subparsers(dest="command",required=True)
+    q=s.add_parser("creative-review"); q.add_argument("video_id",type=int); q.add_argument("--output",default=None); q.add_argument("--no-persist",action="store_true"); q.set_defaults(fn=cmd_creative_review)
+    q=s.add_parser("creative-reviews"); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_creative_reviews)
+    q=s.add_parser("creative-defects"); q.add_argument("video_id",type=int); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_creative_defects)
+    q=s.add_parser("creative-changes"); q.add_argument("video_id",type=int); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_creative_changes)
+    q=s.add_parser("review-export"); q.add_argument("--review-key",required=True); q.add_argument("--output-dir",required=True); q.set_defaults(fn=cmd_review_export)
+    q=s.add_parser("brief-create"); q.add_argument("--change-key",required=True); q.add_argument("--target-version-label",default=None); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_brief_create)
+    q=s.add_parser("brief-export"); q.add_argument("--brief-key",required=True); q.add_argument("--output-dir",required=True); q.set_defaults(fn=cmd_brief_export)
+    q=s.add_parser("version-import"); q.add_argument("file"); q.add_argument("--episode",required=True); q.add_argument("--permission",required=True); q.add_argument("--parent-version-key",default=None); q.add_argument("--brief-key",default=None); q.add_argument("--source-video-id",type=int,default=None); q.add_argument("--version-label",default=None); q.add_argument("--allowed-root",action="append",default=None); q.set_defaults(fn=cmd_version_import)
+    q=s.add_parser("version-import-contract"); q.add_argument("file"); q.add_argument("--allowed-root",action="append",default=None); q.set_defaults(fn=cmd_version_import_contract)
+    q=s.add_parser("version-approve"); q.add_argument("--subject-type",required=True); q.add_argument("--subject-key",required=True); q.add_argument("--decision",required=True); q.add_argument("--evaluator",required=True); q.add_argument("--notes",default=""); q.set_defaults(fn=cmd_version_approve)
+    q=s.add_parser("version-evaluate"); q.add_argument("--version-key",required=True); q.add_argument("--evaluator",required=True); q.add_argument("--visual-impact",type=float); q.add_argument("--realism",type=float); q.add_argument("--clarity",type=float); q.add_argument("--hook",type=float); q.add_argument("--narrative",type=float); q.add_argument("--business-value",type=float); q.add_argument("--cta",type=float); q.add_argument("--preference",default="no_preference"); q.add_argument("--compared-version-key",default=None); q.add_argument("--confidence",type=float); q.add_argument("--notes",default=""); q.add_argument("--evaluated-at",default=None); q.add_argument("--provenance",default="human"); q.set_defaults(fn=cmd_version_evaluate)
+    q=s.add_parser("performance-record"); q.add_argument("--version-key",required=True); q.add_argument("--platform",required=True); q.add_argument("--measured-at",default=None); q.add_argument("--metrics",required=True); q.add_argument("--campaign",default=None); q.add_argument("--published-at",default=None); q.add_argument("--hook-used",default=None); q.add_argument("--cta-used",default=None); q.add_argument("--provenance",default="USER_PROVIDED"); q.add_argument("--notes",default=""); q.set_defaults(fn=cmd_performance_record)
+    q=s.add_parser("version-compare"); q.add_argument("--a",required=True); q.add_argument("--b",required=True); q.add_argument("--platform",default=None); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_version_compare)
+    q=s.add_parser("version-integrity"); q.add_argument("--version-key",required=True); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_version_integrity)
+    q=s.add_parser("versions-list"); q.add_argument("--episode",default=None); q.set_defaults(fn=cmd_versions_list)
+    q=s.add_parser("loop-status"); q.add_argument("--output",default=None); q.set_defaults(fn=cmd_loop_status)
     q=s.add_parser("import"); q.add_argument("file"); q.add_argument("--episode",required=True); q.add_argument("--version",default="v0.1"); q.add_argument("--campaign",default=None); q.add_argument("--platform",default=None); q.add_argument("--topic",default=None); q.add_argument("--audience",default=None); q.add_argument("--problem",default=None); q.add_argument("--solution",default=None); q.add_argument("--publication-status",default=None); q.add_argument("--provenance",default=None); q.add_argument("--source-kind",choices=["published","review","synthetic","unknown"],default="unknown"); q.add_argument("--approval",default="unknown"); q.add_argument("--permission",default="unknown"); q.set_defaults(fn=cmd_import)
     q=s.add_parser("import-metadata"); q.add_argument("file"); q.set_defaults(fn=cmd_import_metadata)
     q=s.add_parser("analyze"); q.add_argument("video_id",type=int); q.set_defaults(fn=cmd_analyze)

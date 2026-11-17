@@ -1,0 +1,180 @@
+{
+  "type": "object",
+  "required": [
+    "contract_version",
+    "version_key",
+    "episode",
+    "imported_at",
+    "status",
+    "video_id",
+    "parent_version_key",
+    "brief_key",
+    "file",
+    "permission",
+    "provenance",
+    "overwrite_policy",
+    "intended_use",
+    "training_eligible",
+    "constraints"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "episode-version.v0.1"
+    },
+    "version_key": {
+      "type": "string"
+    },
+    "episode": {
+      "type": "string"
+    },
+    "imported_at": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "IMPORTED",
+        "ACTIVE_FOR_COMPARISON",
+        "SUPERSEDED",
+        "ROLLED_BACK",
+        "ARCHIVED"
+      ]
+    },
+    "video_id": {
+      "type": "integer"
+    },
+    "parent_version_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "brief_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "file": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256",
+        "size_bytes",
+        "duration_s",
+        "fps",
+        "width",
+        "height"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": "integer"
+        },
+        "duration_s": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "fps": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "width": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "height": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      }
+    },
+    "permission": {
+      "type": "object",
+      "required": [
+        "status",
+        "label",
+        "comparison_allowed",
+        "training_allowed",
+        "derivative_allowed",
+        "note"
+      ],
+      "properties": {
+        "status": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "comparison_allowed": {
+          "type": "boolean"
+        },
+        "training_allowed": {
+          "type": "boolean"
+        },
+        "derivative_allowed": {
+          "const": false
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "producer",
+        "source_kind",
+        "video_created",
+        "brief_key"
+      ],
+      "properties": {
+        "producer": {
+          "type": "string"
+        },
+        "source_kind": {
+          "type": "string"
+        },
+        "video_created": {
+          "type": "boolean"
+        },
+        "brief_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "overwrite_policy": {
+      "const": "NEVER_OVERWRITE"
+    },
+    "intended_use": {
+      "enum": [
+        "comparison_only",
+        "comparison_and_possible_training"
+      ]
+    },
+    "training_eligible": {
+      "type": "boolean"
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -112,25 +112,45 @@ DEFAULTS = [
     ("learning-gate.v0.1.schema.json", "learning-status.json"),
 ]
 
+V06_DEFAULTS = [
+    ("creative-review.v0.1.schema.json", "creative-review.json"),
+    ("visual-defects.v0.1.schema.json", "visual-defects.json"),
+    ("recommended-changes.v0.1.schema.json", "recommended-changes.json"),
+    ("production-brief.v0.1.schema.json", "production-brief.json"),
+    ("episode-version.v0.1.schema.json", "episode-version.json"),
+    ("human-approval.v0.1.schema.json", "human-approval.json"),
+    ("human-evaluation.v0.1.schema.json", "human-evaluation.json"),
+    ("performance-record.v0.1.schema.json", "performance-record.json"),
+    ("performance-comparison.v0.1.schema.json", "performance-comparison.json"),
+]
+
 PRODUCTION_GLOB = "production/*.json"
 
 
 def defaults() -> int:
-    reports = ROOT / "reports" / "v05"
-    if not reports.exists():
-        print("No reports/v05 directory; nothing to validate.")
-        return 0
     failures = 0
-    for schema_name, document_name in DEFAULTS:
-        document = reports / document_name
-        if not document.exists():
-            print(f"SKIP missing {document}")
+    checked = 0
+    for reports_root, pairs, label in (
+        (ROOT / "reports" / "v05", DEFAULTS, "v05"),
+        (ROOT / "reports" / "v06", V06_DEFAULTS, "v06"),
+    ):
+        if not reports_root.exists():
+            print(f"No {label} reports directory; nothing to validate.")
             continue
-        try:
-            print(check_document(ROOT / "contracts" / schema_name, document))
-        except ContractError as exc:
-            failures += 1
-            print(f"FAIL {document.name}: {exc}", file=sys.stderr)
+        for schema_name, document_name in pairs:
+            document = reports_root / document_name
+            if not document.exists():
+                print(f"SKIP missing {document}")
+                continue
+            checked += 1
+            try:
+                print(check_document(ROOT / "contracts" / schema_name, document))
+            except ContractError as exc:
+                failures += 1
+                print(f"FAIL {document.name}: {exc}", file=sys.stderr)
+    if not checked:
+        print("No reports directories with published contracts found.")
+    return 1 if failures else 0
     for document in sorted((ROOT / "data").rglob(PRODUCTION_GLOB)):
         try:
             print(check_document(

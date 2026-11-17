@@ -21,6 +21,15 @@ V0.5 introduces the **VLUX Attention Lab V0.1**: a deterministic, CPU-only creat
 >
 > This is intentional. No model has been trained, promoted, or commercially validated.
 
+## What is new in V0.6
+
+- **Creative Feedback Loop** — video → analysis → recommendations → correction brief → new version → comparison → feedback → future learning.
+- **Versioned V0.6 contracts** — creative review, visual defects, recommended changes, production brief, episode version, human approval, human evaluation, performance record and performance comparison.
+- **Actionable recommendations** — every change carries episode, timestamp, detected problem, evidence, estimated impact, proposed solution, priority, suggested tool and acceptance criterion; estimates are marked `ESTIMATE_ONLY` and never presented as results.
+- **Production handoff** — proposal-only briefs (`auto_apply: false`, `write_into_agent_workspace: false`) with explicit import paths, SHA-256 hashes and permissions.
+- **Episode versions** — immutable in practice (`NEVER_OVERWRITE`), integrity verified by SHA-256, activation/rollback scoped to comparison state.
+- **Performance tracking per version** — missing metrics stay missing, zeros stay zero, likes are not leads.
+
 ## What is new in V0.5
 
 - **Attention Lab** — hook, narrative, production, commercial-value and results layers with explicit confidence, coverage and limitations.
@@ -111,9 +120,11 @@ authorized media
    → layered A/B comparison
    → recommendations
    → Creative Director brief
-   → visual production adapter
-   → quality analysis + version registry
-   → human approval
+   → production handoff (proposal)
+   → episode version import
+   → version comparison
+   → human feedback
+   → learning governance
 ```
 
 The training branch is separate and gated:
@@ -129,7 +140,7 @@ More detail: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 ## Engineering practices
 
 - modular components with explicit ownership;
-- versioned SQLite schema (`0.5`) and versioned JSON contracts;
+- versioned SQLite schema (`0.6`) and versioned JSON contracts;
 - SHA-256 file hashing and duplicate rejection;
 - read-only treatment of source media;
 - separate tables for assets, publications, platform metrics and commercial records;
@@ -239,6 +250,26 @@ Run verification:
 
 The launcher creates a local `.venv` with system packages, checks FFmpeg/FFprobe and SQLite, and does not start Blender or use a GPU.
 
+### Useful V0.6 commands
+
+```powershell
+python -m vlux_ci.cli creative-review <video_id>
+python -m vlux_ci.cli creative-defects <video_id>
+python -m vlux_ci.cli creative-changes <video_id>
+python -m vlux_ci.cli review-export --review-key <key> --output-dir <dir>
+python -m vlux_ci.cli brief-create --change-key <key> --target-version-label <label>
+python -m vlux_ci.cli brief-export --brief-key <key> --output-dir <dir>
+python -m vlux_ci.cli version-import <file> --episode <EP> --permission <synthetic|authorized|owned|public_domain|authorized_analysis_only>
+python -m vlux_ci.cli version-import-contract <contract.json>
+python -m vlux_ci.cli version-approve --subject-type recommended_change --subject-key <key> --decision APPROVED --evaluator <named>
+python -m vlux_ci.cli version-evaluate --version-key <key> --evaluator <named> --preference B --compared-version-key <key>
+python -m vlux_ci.cli performance-record --version-key <key> --platform Instagram --metrics '{"likes":176,"retention_3s":null,"qualified_leads":null}'
+python -m vlux_ci.cli version-compare --a <version_a> --b <version_b> --platform Instagram
+python -m vlux_ci.cli version-integrity --version-key <key>
+python -m vlux_ci.cli versions-list --episode EP021
+python -m vlux_ci.cli loop-status
+```
+
 ### Useful V0.5 commands
 
 ```powershell
@@ -280,6 +311,7 @@ vlux_ci/                 application modules
   ab.py                  layered A/B comparison
   learning.py            dataset registry, training gate, model registry
   production.py          local production adapters and versions
+  creative_loop.py       V0.6 Creative Feedback Loop
 tests/                   unit, persistence and contract tests
 scripts/                 demo, validation and end-to-end verification
 contracts/               versioned JSON schemas
@@ -300,6 +332,7 @@ Private runtime data is intentionally excluded: SQLite databases, reports, artif
 - V0.3 — functional local dashboard and end-to-end workflow;
 - V0.4 — platform-separated commercial analytics and EP025 proposal evaluation;
 - V0.5 — Attention Lab, layered A/B, dataset registry, training gate, model registry and local production versions.
+- V0.6 — Creative Feedback Loop: versioned contracts, actionable recommendations, production handoff, episode-version import, version comparison, human evaluation, performance records and loop dashboard/CLI.
 
 ### Planned
 
@@ -317,6 +350,8 @@ Planned work is not presented as implemented capability.
 **Works today:** local dashboard and CLI, authorized MP4 copy/import, FFprobe/OpenCV facts, Attention Lab estimates with evidence, identified human evaluations, layered A/B comparison, dataset registry, blocked training gate, local production manifests and CPU animatics, version activation/rollback, JSON contracts, persistence and automated verification.
 
 **Still requires evidence:** human preference data for real episodes, verified commercial outcomes, enough independent authorized videos to pass the gate, OCR/ASR for on-screen text, and human approval of production recommendations.
+
+**V0.6 status:** the Creative Feedback Loop is implemented and verified with synthetic media and authorized local copies; the training gate remains blocked and no commercial improvement was claimed.
 
 **Explicitly not claimed:** scientific virality prediction, causal effects from observational data, trained-model accuracy, customer results, revenue, or successful automatic video generation.
 

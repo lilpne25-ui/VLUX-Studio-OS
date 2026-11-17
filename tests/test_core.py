@@ -25,12 +25,12 @@ class TestCore(unittest.TestCase):
         self.con.commit(); r=train(self.con,Path(self.t.name)/"a",min_examples=8); self.assertIn(r['status'],{'TRAINED','NO_TRAINING_INSUFFICIENT_DATA'})
     def test_v02_schema_and_unknown_metrics(self):
         cols={r[1] for r in self.con.execute("pragma table_info(videos)")}
-        self.assertIn("source_kind", cols); self.assertEqual(self.con.execute("select value from schema_meta where key='schema_version'").fetchone()[0], "0.5")
+        self.assertIn("source_kind", cols); self.assertEqual(self.con.execute("select value from schema_meta where key='schema_version'").fetchone()[0], "0.6")
         self.con.execute("insert into videos(episode,version,file_path,file_hash,permission_status,source_kind) values('E','v','x','h2','synthetic','synthetic')")
         self.con.execute("insert into publications(video_id,episode,platform,provenance) values(?,?,?,?)",(1,'E','Instagram','USER_PROVIDED_SCREENSHOT'))
         self.con.execute("insert into platform_metrics(publication_id,metric_name,metric_value,status,provenance) values(?,?,?,?,?)",(1,'views',100,'OBSERVED','USER_PROVIDED_SCREENSHOT'))
         self.con.commit(); self.assertEqual(summarize(self.con)["records"], 0)
-        self.assertEqual(self.con.execute("select value from schema_meta where key='schema_version'").fetchone()[0], "0.5")
+        self.assertEqual(self.con.execute("select value from schema_meta where key='schema_version'").fetchone()[0], "0.6")
     def test_funnel_does_not_convert_interaction_to_lead(self):
         from vlux_ci.funnel import funnel
         self.con.execute("insert into publications(episode,platform,provenance) values('EP011','Instagram','USER_PROVIDED_SCREENSHOT')")

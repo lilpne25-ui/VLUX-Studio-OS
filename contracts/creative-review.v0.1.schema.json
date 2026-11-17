@@ -1,0 +1,673 @@
+{
+  "type": "object",
+  "required": [
+    "contract_version",
+    "review_key",
+    "status",
+    "created_at",
+    "video",
+    "evidence_layers",
+    "defects",
+    "recommended_changes",
+    "approval",
+    "guardrails"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "creative-review.v0.1"
+    },
+    "review_key": {
+      "type": "string"
+    },
+    "status": {
+      "const": "REVIEW_ESTIMATE_ONLY"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "video": {
+      "type": "object",
+      "required": [
+        "id",
+        "episode",
+        "version",
+        "resolution",
+        "file_hash",
+        "permission_status"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "episode": {
+          "type": "string"
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "duration_s": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "resolution": {
+          "type": "string"
+        },
+        "file_hash": {
+          "type": "string"
+        },
+        "permission_status": {
+          "type": "string"
+        },
+        "source_kind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "attention_id": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "evidence_layers": {
+      "type": "object",
+      "required": [
+        "observed_facts",
+        "heuristic_estimates",
+        "human_evaluations",
+        "commercial_metrics"
+      ],
+      "properties": {
+        "observed_facts": {
+          "type": "object",
+          "required": [
+            "status",
+            "source",
+            "duration_s",
+            "cut_count",
+            "first_3s_cut_count",
+            "avg_shot_s",
+            "freeze_ratio",
+            "limitations"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "AVAILABLE",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "source": {
+              "type": "string"
+            },
+            "duration_s": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "cut_count": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "first_3s_cut_count": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "avg_shot_s": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "brightness_mean": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "contrast_mean": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "freeze_ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "silence_ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "first_frame": {
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "heuristic_estimates": {
+          "type": "object",
+          "required": [
+            "status",
+            "source",
+            "overall",
+            "confidence",
+            "disclaimer"
+          ],
+          "properties": {
+            "status": {
+              "const": "ESTIMATE_ONLY_NOT_VALIDATED"
+            },
+            "source": {
+              "type": "string"
+            },
+            "overall": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "band": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "confidence": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "coverage": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "dimensions": {
+              "type": [
+                "object",
+                "null"
+              ]
+            },
+            "disclaimer": {
+              "type": "string"
+            }
+          }
+        },
+        "human_evaluations": {
+          "type": "object",
+          "required": [
+            "status",
+            "note"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "AVAILABLE",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "video_evaluations": {
+              "type": "integer"
+            },
+            "gate_eligible_video_evaluations": {
+              "type": "integer"
+            },
+            "version_evaluations": {
+              "type": "integer"
+            },
+            "gate_eligible_version_evaluations": {
+              "type": "integer"
+            },
+            "provenance_counts": {
+              "type": "object"
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        "commercial_metrics": {
+          "type": "object",
+          "required": [
+            "status",
+            "exact_version_match",
+            "note",
+            "likes_are_not_leads"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "EXACT_VERSION",
+                "EPISODE_LINKED_ONLY",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "exact_version_match": {
+              "type": "boolean"
+            },
+            "publication_ids": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "episode_linked_publication_ids": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              }
+            },
+            "exact_metrics": {
+              "type": "object"
+            },
+            "commercial_leads": {
+              "type": "object"
+            },
+            "observed_metric_count": {
+              "type": "integer"
+            },
+            "note": {
+              "type": "string"
+            },
+            "likes_are_not_leads": {
+              "const": true
+            }
+          }
+        }
+      }
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "defect_key",
+          "episode",
+          "timestamp",
+          "category",
+          "severity",
+          "detected_problem",
+          "observed_evidence",
+          "evidence_class",
+          "assessment_class",
+          "status"
+        ],
+        "properties": {
+          "defect_key": {
+            "type": "string"
+          },
+          "episode": {
+            "type": "string"
+          },
+          "version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "code": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "object",
+            "required": [
+              "start_s",
+              "end_s",
+              "label"
+            ],
+            "properties": {
+              "start_s": {
+                "type": "number"
+              },
+              "end_s": {
+                "type": "number"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "category": {
+            "enum": [
+              "hook",
+              "narrative",
+              "production",
+              "commercial",
+              "accessibility"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "detected_problem": {
+            "type": "string"
+          },
+          "interpretation": {
+            "type": "string"
+          },
+          "observed_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "metric",
+                "source"
+              ],
+              "properties": {
+                "metric": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": [
+                    "number",
+                    "string",
+                    "null"
+                  ]
+                },
+                "unit": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "type": "string"
+                },
+                "observed_at": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence_class": {
+            "const": "OBSERVED_FACT_TRIGGER"
+          },
+          "assessment_class": {
+            "const": "HEURISTIC_INTERPRETATION"
+          },
+          "confidence": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "enum": [
+              "OPEN",
+              "RESOLVED",
+              "DISMISSED"
+            ]
+          }
+        }
+      }
+    },
+    "recommended_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "change_key",
+          "episode",
+          "timestamp",
+          "detected_problem",
+          "evidence",
+          "estimated_impact",
+          "proposed_solution",
+          "priority",
+          "suggested_tool",
+          "acceptance_criterion",
+          "status"
+        ],
+        "properties": {
+          "change_key": {
+            "type": "string"
+          },
+          "episode": {
+            "type": "string"
+          },
+          "version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "defect_key": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "timestamp": {
+            "type": "object",
+            "required": [
+              "start_s",
+              "end_s",
+              "label"
+            ],
+            "properties": {
+              "start_s": {
+                "type": "number"
+              },
+              "end_s": {
+                "type": "number"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "detected_problem": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "metric",
+                "source"
+              ],
+              "properties": {
+                "metric": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": [
+                    "number",
+                    "string",
+                    "null"
+                  ]
+                },
+                "unit": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "type": "string"
+                },
+                "observed_at": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence_class": {
+            "const": "OBSERVED_FACT_TRIGGER"
+          },
+          "assessment_class": {
+            "const": "HEURISTIC_INTERPRETATION"
+          },
+          "estimated_impact": {
+            "type": "object",
+            "required": [
+              "status",
+              "not_a_result",
+              "metric",
+              "direction",
+              "band",
+              "rationale",
+              "disclaimer"
+            ],
+            "properties": {
+              "status": {
+                "const": "ESTIMATE_ONLY"
+              },
+              "not_a_result": {
+                "const": true
+              },
+              "metric": {
+                "type": "string"
+              },
+              "direction": {
+                "enum": [
+                  "increase",
+                  "decrease",
+                  "neutral"
+                ]
+              },
+              "band": {
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "rationale": {
+                "type": "string"
+              },
+              "disclaimer": {
+                "type": "string"
+              }
+            }
+          },
+          "proposed_solution": {
+            "type": "string"
+          },
+          "priority": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "suggested_tool": {
+            "type": "object",
+            "required": [
+              "name",
+              "mode"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "alternatives": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "mode": {
+                "const": "HUMAN_SUPERVISED"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          },
+          "acceptance_criterion": {
+            "type": "string"
+          },
+          "risks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "enum": [
+              "PROPOSAL",
+              "APPROVED_FOR_PRODUCTION",
+              "REJECTED",
+              "CHANGES_REQUESTED"
+            ]
+          },
+          "requires_human_approval": {
+            "const": true
+          },
+          "automatic_execution": {
+            "const": false
+          }
+        }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "required": [
+        "status",
+        "required",
+        "note"
+      ],
+      "properties": {
+        "status": {
+          "const": "PENDING"
+        },
+        "required": {
+          "const": true
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "guardrails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

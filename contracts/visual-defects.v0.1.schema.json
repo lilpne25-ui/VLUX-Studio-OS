@@ -1,0 +1,202 @@
+{
+  "type": "object",
+  "required": [
+    "contract_version",
+    "review_key",
+    "episode",
+    "generated_at",
+    "status",
+    "source",
+    "defects",
+    "limitations"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "visual-defects.v0.1"
+    },
+    "review_key": {
+      "type": "string"
+    },
+    "episode": {
+      "type": "string"
+    },
+    "version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "REVIEW_ESTIMATE_ONLY",
+        "REVIEW_HUMAN_REVIEWED"
+      ]
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "analysis",
+        "facts"
+      ],
+      "properties": {
+        "analysis": {
+          "type": "string"
+        },
+        "facts": {
+          "type": "string"
+        },
+        "human_text_provenance": {
+          "type": "string"
+        }
+      }
+    },
+    "defects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "defect_key",
+          "episode",
+          "timestamp",
+          "category",
+          "severity",
+          "detected_problem",
+          "observed_evidence",
+          "evidence_class",
+          "assessment_class",
+          "status"
+        ],
+        "properties": {
+          "defect_key": {
+            "type": "string"
+          },
+          "episode": {
+            "type": "string"
+          },
+          "version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "code": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "object",
+            "required": [
+              "start_s",
+              "end_s",
+              "label"
+            ],
+            "properties": {
+              "start_s": {
+                "type": "number"
+              },
+              "end_s": {
+                "type": "number"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "category": {
+            "enum": [
+              "hook",
+              "narrative",
+              "production",
+              "commercial",
+              "accessibility"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "detected_problem": {
+            "type": "string"
+          },
+          "interpretation": {
+            "type": "string"
+          },
+          "observed_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "metric",
+                "source"
+              ],
+              "properties": {
+                "metric": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": [
+                    "number",
+                    "string",
+                    "null"
+                  ]
+                },
+                "unit": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "type": "string"
+                },
+                "observed_at": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence_class": {
+            "const": "OBSERVED_FACT_TRIGGER"
+          },
+          "assessment_class": {
+            "const": "HEURISTIC_INTERPRETATION"
+          },
+          "confidence": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "limitations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "enum": [
+              "OPEN",
+              "RESOLVED",
+              "DISMISSED"
+            ]
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "type": "object",
+  "required": [
+    "contract_version",
+    "review_key",
+    "episode",
+    "generated_at",
+    "status",
+    "changes",
+    "guardrails"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "recommended-changes.v0.1"
+    },
+    "review_key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "episode": {
+      "type": "string"
+    },
+    "version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "status": {
+      "const": "PROPOSAL_ONLY"
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "change_key",
+          "episode",
+          "timestamp",
+          "detected_problem",
+          "evidence",
+          "estimated_impact",
+          "proposed_solution",
+          "priority",
+          "suggested_tool",
+          "acceptance_criterion",
+          "status"
+        ],
+        "properties": {
+          "change_key": {
+            "type": "string"
+          },
+          "episode": {
+            "type": "string"
+          },
+          "version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "defect_key": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "timestamp": {
+            "type": "object",
+            "required": [
+              "start_s",
+              "end_s",
+              "label"
+            ],
+            "properties": {
+              "start_s": {
+                "type": "number"
+              },
+              "end_s": {
+                "type": "number"
+              },
+              "label": {
+                "type": "string"
+              }
+            }
+          },
+          "detected_problem": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "metric",
+                "source"
+              ],
+              "properties": {
+                "metric": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": [
+                    "number",
+                    "string",
+                    "null"
+                  ]
+                },
+                "unit": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "type": "string"
+                },
+                "observed_at": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "evidence_class": {
+            "const": "OBSERVED_FACT_TRIGGER"
+          },
+          "assessment_class": {
+            "const": "HEURISTIC_INTERPRETATION"
+          },
+          "estimated_impact": {
+            "type": "object",
+            "required": [
+              "status",
+              "not_a_result",
+              "metric",
+              "direction",
+              "band",
+              "rationale",
+              "disclaimer"
+            ],
+            "properties": {
+              "status": {
+                "const": "ESTIMATE_ONLY"
+              },
+              "not_a_result": {
+                "const": true
+              },
+              "metric": {
+                "type": "string"
+              },
+              "direction": {
+                "enum": [
+                  "increase",
+                  "decrease",
+                  "neutral"
+                ]
+              },
+              "band": {
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "rationale": {
+                "type": "string"
+              },
+              "disclaimer": {
+                "type": "string"
+              }
+            }
+          },
+          "proposed_solution": {
+            "type": "string"
+          },
+          "priority": {
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "suggested_tool": {
+            "type": "object",
+            "required": [
+              "name",
+              "mode"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "alternatives": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "mode": {
+                "const": "HUMAN_SUPERVISED"
+              },
+              "reason": {
+                "type": "string"
+              }
+            }
+          },
+          "acceptance_criterion": {
+            "type": "string"
+          },
+          "risks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "enum": [
+              "PROPOSAL",
+              "APPROVED_FOR_PRODUCTION",
+              "REJECTED",
+              "CHANGES_REQUESTED"
+            ]
+          },
+          "requires_human_approval": {
+            "const": true
+          },
+          "automatic_execution": {
+            "const": false
+          }
+        }
+      }
+    },
+    "guardrails": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

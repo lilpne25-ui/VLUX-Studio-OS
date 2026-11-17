@@ -3,7 +3,7 @@ import hashlib, json, sqlite3
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "0.5"
+SCHEMA_VERSION = "0.6"
 FEATURE_NAMES = ["duration_s","fps","width","height","cut_count","avg_shot_s","motion_mean","brightness_mean","contrast_mean","black_ratio","freeze_ratio","subtitle_space_ratio","first_second_motion","first_second_brightness"]
 
 def sha256_file(path: str | Path) -> str:
@@ -128,6 +128,78 @@ def connect(db: str | Path, check_same_thread: bool = True) -> sqlite3.Connectio
     );
     CREATE TABLE IF NOT EXISTS model_registry_state (
       key TEXT PRIMARY KEY, value TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS creative_reviews (
+      id INTEGER PRIMARY KEY, review_key TEXT NOT NULL UNIQUE,
+      video_id INTEGER NOT NULL REFERENCES videos(id), episode TEXT NOT NULL,
+      version_label TEXT, contract_version TEXT NOT NULL, status TEXT NOT NULL,
+      payload_json TEXT NOT NULL, defects_json TEXT NOT NULL,
+      recommendations_json TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS recommended_changes (
+      id INTEGER PRIMARY KEY, change_key TEXT NOT NULL UNIQUE,
+      review_id INTEGER NOT NULL REFERENCES creative_reviews(id),
+      video_id INTEGER NOT NULL REFERENCES videos(id), episode TEXT NOT NULL,
+      start_s REAL, end_s REAL, problem TEXT NOT NULL, evidence_json TEXT NOT NULL,
+      estimated_impact_json TEXT NOT NULL, proposed_solution TEXT NOT NULL,
+      priority TEXT NOT NULL, suggested_tool TEXT NOT NULL,
+      acceptance_criterion TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'PROPOSAL',
+      exported_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS production_briefs (
+      id INTEGER PRIMARY KEY, brief_key TEXT NOT NULL UNIQUE,
+      change_id INTEGER NOT NULL REFERENCES recommended_changes(id),
+      episode TEXT NOT NULL, source_video_id INTEGER REFERENCES videos(id),
+      target_version_label TEXT NOT NULL, payload_json TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'EXPORT_READY', exported_path TEXT,
+      exported_sha256 TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS episode_versions (
+      id INTEGER PRIMARY KEY, version_key TEXT NOT NULL UNIQUE,
+      episode TEXT NOT NULL, source_video_id INTEGER REFERENCES videos(id),
+      parent_version_key TEXT, brief_key TEXT, file_path TEXT NOT NULL,
+      file_hash TEXT NOT NULL UNIQUE, duration_s REAL, width INTEGER, height INTEGER,
+      permission_status TEXT NOT NULL, provenance TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'IMPORTED', import_contract_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, activated_at TEXT
+    );
+    CREATE TABLE IF NOT EXISTS human_approvals (
+      id INTEGER PRIMARY KEY, approval_key TEXT NOT NULL UNIQUE,
+      subject_type TEXT NOT NULL, subject_key TEXT NOT NULL, decision TEXT NOT NULL,
+      evaluator_id TEXT NOT NULL, provenance TEXT NOT NULL, notes TEXT,
+      contract_version TEXT NOT NULL, payload_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS version_evaluations (
+      id INTEGER PRIMARY KEY, evaluation_key TEXT NOT NULL UNIQUE,
+      version_key TEXT NOT NULL REFERENCES episode_versions(version_key),
+      episode TEXT NOT NULL, evaluator_id TEXT NOT NULL, provenance TEXT NOT NULL,
+      visual_impact REAL, realism REAL, clarity REAL, hook REAL, narrative REAL,
+      business_value REAL, cta REAL, preference TEXT, compared_version_key TEXT,
+      confidence REAL, notes TEXT, gate_eligible INTEGER NOT NULL DEFAULT 0,
+      contract_version TEXT NOT NULL, payload_json TEXT NOT NULL,
+      evaluated_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS performance_records (
+      id INTEGER PRIMARY KEY, record_key TEXT NOT NULL UNIQUE,
+      version_key TEXT NOT NULL REFERENCES episode_versions(version_key),
+      episode TEXT NOT NULL, platform TEXT NOT NULL, campaign TEXT,
+      published_at TEXT, measured_at TEXT, hook_used TEXT, cta_used TEXT,
+      metrics_json TEXT NOT NULL, provenance TEXT NOT NULL, status TEXT NOT NULL,
+      notes TEXT, contract_version TEXT NOT NULL, payload_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS version_comparisons (
+      id INTEGER PRIMARY KEY, comparison_key TEXT NOT NULL UNIQUE,
+      version_a_key TEXT NOT NULL REFERENCES episode_versions(version_key),
+      version_b_key TEXT NOT NULL REFERENCES episode_versions(version_key),
+      contract_version TEXT NOT NULL, payload_json TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE TABLE IF NOT EXISTS feedback_loop_events (
+      id INTEGER PRIMARY KEY, event_key TEXT NOT NULL UNIQUE,
+      event_type TEXT NOT NULL, subject_type TEXT NOT NULL, subject_key TEXT NOT NULL,
+      payload_json TEXT NOT NULL, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
     ''')
     migrations = {

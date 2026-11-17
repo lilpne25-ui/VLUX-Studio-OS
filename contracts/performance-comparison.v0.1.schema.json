@@ -1,0 +1,686 @@
+{
+  "type": "object",
+  "required": [
+    "contract_version",
+    "comparison_key",
+    "created_at",
+    "status",
+    "scope",
+    "a",
+    "b",
+    "match",
+    "metrics",
+    "human_evaluations",
+    "summary",
+    "limitations"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "performance-comparison.v0.1"
+    },
+    "comparison_key": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "status": {
+      "const": "COMPARISON_DESCRIPTIVE_ONLY"
+    },
+    "scope": {
+      "enum": [
+        "SAME_EPISODE_VERSION_COMPARISON",
+        "CROSS_EPISODE_BENCHMARK"
+      ]
+    },
+    "a": {
+      "type": "object",
+      "required": [
+        "version_key",
+        "episode",
+        "file_hash",
+        "label",
+        "permission_status",
+        "facts",
+        "performance_record_key"
+      ],
+      "properties": {
+        "version_key": {
+          "type": "string"
+        },
+        "episode": {
+          "type": "string"
+        },
+        "file_hash": {
+          "type": "string"
+        },
+        "label": {
+          "const": "A"
+        },
+        "permission_status": {
+          "type": "string"
+        },
+        "facts": {
+          "type": "object",
+          "required": [
+            "version_key",
+            "episode",
+            "status",
+            "estimate_status"
+          ],
+          "properties": {
+            "version_key": {
+              "type": "string"
+            },
+            "episode": {
+              "type": "string"
+            },
+            "video_id": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "status": {
+              "enum": [
+                "AVAILABLE",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "duration_s": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "cut_count": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "first_3s_cut_count": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "avg_shot_s": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "freeze_ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "brightness_mean": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "contrast_mean": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "estimate_overall": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "estimate_status": {
+              "const": "ESTIMATE_ONLY_NOT_VALIDATED"
+            }
+          }
+        },
+        "performance_record_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "b": {
+      "type": "object",
+      "required": [
+        "version_key",
+        "episode",
+        "file_hash",
+        "label",
+        "permission_status",
+        "facts",
+        "performance_record_key"
+      ],
+      "properties": {
+        "version_key": {
+          "type": "string"
+        },
+        "episode": {
+          "type": "string"
+        },
+        "file_hash": {
+          "type": "string"
+        },
+        "label": {
+          "const": "B"
+        },
+        "permission_status": {
+          "type": "string"
+        },
+        "facts": {
+          "type": "object",
+          "required": [
+            "version_key",
+            "episode",
+            "status",
+            "estimate_status"
+          ],
+          "properties": {
+            "version_key": {
+              "type": "string"
+            },
+            "episode": {
+              "type": "string"
+            },
+            "video_id": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "status": {
+              "enum": [
+                "AVAILABLE",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "duration_s": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "cut_count": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "first_3s_cut_count": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "avg_shot_s": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "freeze_ratio": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "brightness_mean": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "contrast_mean": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "estimate_overall": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "estimate_status": {
+              "const": "ESTIMATE_ONLY_NOT_VALIDATED"
+            }
+          }
+        },
+        "performance_record_key": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "match": {
+      "type": "object",
+      "required": [
+        "platform",
+        "platform_status",
+        "platforms_a",
+        "platforms_b",
+        "exact_version_keys",
+        "integrity",
+        "measurement_basis"
+      ],
+      "properties": {
+        "platform": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "platform_status": {
+          "enum": [
+            "EXPLICIT",
+            "INFERRED",
+            "MULTIPLE_COMMON_PLATFORMS_FIRST_USED",
+            "NO_COMMON_PLATFORM"
+          ]
+        },
+        "platforms_a": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "platforms_b": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "exact_version_keys": {
+          "const": true
+        },
+        "integrity": {
+          "type": "object",
+          "required": [
+            "a",
+            "b"
+          ],
+          "properties": {
+            "a": {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "MATCH",
+                    "MISSING",
+                    "HASH_MISMATCH"
+                  ]
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "expected": {
+                  "type": "string"
+                },
+                "actual": {
+                  "type": "string"
+                }
+              }
+            },
+            "b": {
+              "type": "object",
+              "required": [
+                "status"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "MATCH",
+                    "MISSING",
+                    "HASH_MISMATCH"
+                  ]
+                },
+                "sha256": {
+                  "type": "string"
+                },
+                "expected": {
+                  "type": "string"
+                },
+                "actual": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "measurement_basis": {
+          "type": "string"
+        }
+      }
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "family",
+          "a",
+          "b",
+          "delta_b_minus_a",
+          "comparability",
+          "note"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "family": {
+            "enum": [
+              "engagement",
+              "commercial",
+              "unknown"
+            ]
+          },
+          "a": {
+            "type": "object",
+            "required": [
+              "value",
+              "status",
+              "is_missing",
+              "is_zero"
+            ],
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "OBSERVED",
+                  "USER_REPORTED",
+                  "ESTIMATED",
+                  "NOT_AVAILABLE"
+                ]
+              },
+              "is_missing": {
+                "type": "boolean"
+              },
+              "is_zero": {
+                "type": "boolean"
+              },
+              "provenance": {
+                "type": "string"
+              },
+              "measured_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "definition": {
+                "type": "string"
+              },
+              "verification": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "currency": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "b": {
+            "type": "object",
+            "required": [
+              "value",
+              "status",
+              "is_missing",
+              "is_zero"
+            ],
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "OBSERVED",
+                  "USER_REPORTED",
+                  "ESTIMATED",
+                  "NOT_AVAILABLE"
+                ]
+              },
+              "is_missing": {
+                "type": "boolean"
+              },
+              "is_zero": {
+                "type": "boolean"
+              },
+              "provenance": {
+                "type": "string"
+              },
+              "measured_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "definition": {
+                "type": "string"
+              },
+              "verification": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "currency": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "delta_b_minus_a": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "comparability": {
+            "enum": [
+              "COMPARABLE",
+              "MISSING_A",
+              "MISSING_B",
+              "BOTH_MISSING",
+              "ESTIMATE_ONLY",
+              "UNVERIFIED_COMMERCIAL",
+              "DIFFERENT_MEASUREMENT_DATE"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "human_evaluations": {
+      "type": "object",
+      "required": [
+        "a",
+        "b",
+        "pairwise"
+      ],
+      "properties": {
+        "a": {
+          "type": "object",
+          "required": [
+            "status",
+            "evaluations",
+            "gate_eligible_human_evaluations",
+            "dimension_means_1_to_5",
+            "provenance_counts"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "AVAILABLE",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "evaluations": {
+              "type": "integer"
+            },
+            "gate_eligible_human_evaluations": {
+              "type": "integer"
+            },
+            "dimension_means_1_to_5": {
+              "type": "object"
+            },
+            "provenance_counts": {
+              "type": "object"
+            }
+          }
+        },
+        "b": {
+          "type": "object",
+          "required": [
+            "status",
+            "evaluations",
+            "gate_eligible_human_evaluations",
+            "dimension_means_1_to_5",
+            "provenance_counts"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "AVAILABLE",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "evaluations": {
+              "type": "integer"
+            },
+            "gate_eligible_human_evaluations": {
+              "type": "integer"
+            },
+            "dimension_means_1_to_5": {
+              "type": "object"
+            },
+            "provenance_counts": {
+              "type": "object"
+            }
+          }
+        },
+        "pairwise": {
+          "type": "object",
+          "required": [
+            "status",
+            "counts",
+            "total",
+            "note"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "AVAILABLE",
+                "NOT_AVAILABLE"
+              ]
+            },
+            "counts": {
+              "type": "object"
+            },
+            "total": {
+              "type": "integer"
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "status",
+        "comparable_metrics",
+        "missing_metrics",
+        "automatic_winner",
+        "winner_policy",
+        "commercial_improvement_claimed",
+        "requires_real_measurement",
+        "likes_are_not_leads"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "NO_COMMON_PLATFORM",
+            "NO_PERFORMANCE_DATA",
+            "DESCRIPTIVE_ONLY_INSUFFICIENT_MATCH",
+            "HUMAN_AND_PERFORMANCE_EVIDENCE_AVAILABLE",
+            "PERFORMANCE_EVIDENCE_ONLY_HUMAN_REVIEW_MISSING"
+          ]
+        },
+        "comparable_metrics": {
+          "type": "integer"
+        },
+        "missing_metrics": {
+          "type": "integer"
+        },
+        "automatic_winner": {
+          "const": null
+        },
+        "winner_policy": {
+          "type": "string"
+        },
+        "commercial_improvement_claimed": {
+          "const": false
+        },
+        "requires_real_measurement": {
+          "const": true
+        },
+        "likes_are_not_leads": {
+          "const": true
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  }
+}

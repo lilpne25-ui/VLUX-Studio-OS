@@ -21,6 +21,15 @@ V0.5 introduce **VLUX Attention Lab V0.1**: una capa de análisis creativo deter
 >
 > Es intencional. Ningún modelo ha sido entrenado, promovido ni validado comercialmente.
 
+## Novedades de V0.6
+
+- **Creative Feedback Loop** — video → análisis → recomendaciones → brief de corrección → nueva versión → comparación → retroalimentación → aprendizaje futuro.
+- **Contratos V0.6 versionados** — creative review, visual defects, recommended changes, production brief, episode version, human approval, human evaluation, performance record y performance comparison.
+- **Recomendaciones accionables** — cada cambio incluye episodio, timestamp, problema detectado, evidencia, impacto estimado, solución propuesta, prioridad, herramienta sugerida y criterio de aceptación; las estimaciones se marcan `ESTIMATE_ONLY` y nunca se presentan como resultados.
+- **Production handoff** — briefs propuestos (`auto_apply: false`, `write_into_agent_workspace: false`) con rutas de importación explícitas, hashes SHA-256 y permisos.
+- **Versiones de episodio** — inmutables en la práctica (`NEVER_OVERWRITE`), integridad verificada por SHA-256, activación/rollback limitada al estado de comparación.
+- **Tracking comercial por versión** — métricas faltantes permanecen faltantes, los ceros se conservan como cero, los likes no son leads.
+
 ## Novedades de V0.5
 
 - **Attention Lab** — capas de gancho, narrativa, producción, valor comercial y resultados con confianza, cobertura y limitaciones explícitas.
@@ -110,10 +119,12 @@ medio autorizado
    → estimaciones Attention Lab + evaluaciones humanas
    → comparación A/B por capas
    → recomendaciones
-   → brief del Creative Director
-   → adaptador de producción visual
-   → análisis de calidad + registro de versiones
-   → aprobación humana
+    → brief del Creative Director
+    → production handoff (propuesta)
+    → importación de versión de episodio
+    → comparación de versiones
+    → retroalimentación humana
+    → gobernanza de aprendizaje
 ```
 
 La rama de entrenamiento está separada y bloqueada:
@@ -193,6 +204,26 @@ Verificación:
 .\verify.ps1
 ```
 
+### Comandos V0.6 útiles
+
+```powershell
+python -m vlux_ci.cli creative-review <video_id>
+python -m vlux_ci.cli creative-defects <video_id>
+python -m vlux_ci.cli creative-changes <video_id>
+python -m vlux_ci.cli review-export --review-key <key> --output-dir <dir>
+python -m vlux_ci.cli brief-create --change-key <key> --target-version-label <label>
+python -m vlux_ci.cli brief-export --brief-key <key> --output-dir <dir>
+python -m vlux_ci.cli version-import <file> --episode <EP> --permission <synthetic|authorized|owned|public_domain|authorized_analysis_only>
+python -m vlux_ci.cli version-import-contract <contract.json>
+python -m vlux_ci.cli version-approve --subject-type recommended_change --subject-key <key> --decision APPROVED --evaluator <named>
+python -m vlux_ci.cli version-evaluate --version-key <key> --evaluator <named> --preference B --compared-version-key <key>
+python -m vlux_ci.cli performance-record --version-key <key> --platform Instagram --metrics '{"likes":176,"retention_3s":null,"qualified_leads":null}'
+python -m vlux_ci.cli version-compare --a <version_a> --b <version_b> --platform Instagram
+python -m vlux_ci.cli version-integrity --version-key <key>
+python -m vlux_ci.cli versions-list --episode EP021
+python -m vlux_ci.cli loop-status
+```
+
 ### Comandos V0.5 útiles
 
 ```powershell
@@ -216,6 +247,8 @@ Las versiones, productores e invariantes están en [`contracts/README.md`](contr
 ## Estado y roadmap
 
 Implementado: V0.1 dataset, V0.2 inteligencia creativa, V0.3 dashboard funcional, V0.4 analítica comercial separada por plataforma, V0.5 Attention Lab, A/B por capas, Dataset Registry, Training Gate, Model Registry y versiones locales de producción.
+
+**V0.6:** el Creative Feedback Loop está implementado y verificado con medios sintéticos y copias autorizadas locales; el gate de entrenamiento sigue bloqueado y no se afirmó mejora comercial.
 
 Planeado: registrar evaluaciones humanas reales, adjuntar resultados comerciales verificados, ejecutar experimentos de una sola variable, ampliar el dataset autorizado hasta pasar el gate, validar un modelo con holdout independiente e integrar recomendaciones con VLUX Video OS mediante contratos versionados.
 
