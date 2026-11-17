@@ -1,4 +1,4 @@
-# VLUX Studio OS
+﻿# VLUX Studio OS
 
 **Inteligencia creativa para tomar mejores decisiones audiovisuales de negocio.**
 
@@ -60,11 +60,11 @@ Todavía no existe un modelo comercial entrenado y validado. No se publican porc
 
 ## Referencia EP011
 
-**Tema:** Autodesk Fusion / Ingeniería de producto
-**Plataforma:** Instagram
-**Procedencia:** `USER_PROVIDED_SCREENSHOT`
-**Fecha:** `UNKNOWN`
-**API:** no verificada
+- **Tema:** Autodesk Fusion / Ingeniería de producto
+- **Plataforma:** Instagram
+- **Procedencia:** `USER_PROVIDED_SCREENSHOT`
+- **Fecha:** `UNKNOWN`
+- **API:** no verificada
 
 | Métrica | Valor |
 |---|---:|
@@ -108,8 +108,8 @@ Planeado: ampliar dataset real autorizado, validar modelo de preferencias, exper
 
 > “No adaptamos tu empresa al software. Adaptamos la tecnología a la forma en que realmente opera tu empresa.”
 
-Sitio oficial: <https://vlux.com.mx>
-GitHub: <https://github.com/lilpne25-ui>
+- Sitio oficial: <https://vlux.com.mx>
+- GitHub: <https://github.com/lilpne25-ui>
 
 No se listan otras redes porque no fueron confirmadas independientemente durante esta publicación.
 

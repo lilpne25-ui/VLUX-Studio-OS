@@ -1,4 +1,4 @@
-# VLUX Studio OS
+﻿# VLUX Studio OS
 
 **AI-powered creative intelligence for business-focused video decisions.**
 
@@ -129,11 +129,11 @@ See [`docs/CREATIVE_STRATEGY.md`](docs/CREATIVE_STRATEGY.md).
 
 ## Reference data: EP011
 
-**Topic:** Autodesk Fusion / Product Engineering
-**Platform:** Instagram
-**Source:** `USER_PROVIDED_SCREENSHOT`
-**Measurement date:** `UNKNOWN`
-**API verification:** not performed
+- **Topic:** Autodesk Fusion / Product Engineering
+- **Platform:** Instagram
+- **Source:** `USER_PROVIDED_SCREENSHOT`
+- **Measurement date:** `UNKNOWN`
+- **API verification:** not performed
 
 | Metric | Value |
 |---|---:|
@@ -209,8 +209,8 @@ Private runtime data is intentionally excluded: SQLite databases, reports, artif
 
 VLUX develops software, automation, and artificial intelligence solutions for real operational problems.
 
-Website: <https://vlux.com.mx>
-GitHub: <https://github.com/lilpne25-ui>
+- Website: <https://vlux.com.mx>
+- GitHub: <https://github.com/lilpne25-ui>
 
 No additional social profiles are listed here because they were not independently confirmed during this release.
 
